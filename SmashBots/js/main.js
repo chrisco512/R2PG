@@ -1,7 +1,7 @@
 var canvas, ctx, stage, player1, player2;
 var countDownInterval;
 var countdownElement;
-var playerHpElement, enemyHpElement, playerStaminaElement, enemyStaminaElement;
+var playerHpElement, enemyHpElement, playerStaminaElement, enemyStaminaElement, consoleElement;
 var countDown = 3;
 var gameState;
 var enableControls;
@@ -34,6 +34,15 @@ var playerAttributes = {
 			this.hp = 0;
 			this.active = false;
 		}
+		var pct = playerAttributes.hp / playerAttributes.maxHp * 100;
+		$("#playerhp").animate({ 'background-size': pct + "%"});
+	},
+	takeStamina: function(stamina) {
+		this.stamina -= stamina;
+		if(this.stamina <= 0)
+			this.stamina = 0;
+		var pct = playerAttributes.stamina / playerAttributes.maxStamina * 100;
+		$("#playerstamina").animate({ 'background-size': pct + "%"});
 	}
 };
 
@@ -45,6 +54,7 @@ var enemyAttributes = {
 	stamina: 20,
 	moves:	[	"aba",	"abba",	"acbd",	"ddcc"	],
 	damage:	[	10,		20,		30,		40		],
+	cost:	[	1,		3,		5,		7		],
 	active: true,
 	takeDamage: function(damage) {
 		this.hp -= damage;
@@ -52,6 +62,15 @@ var enemyAttributes = {
 			this.hp = 0;
 			this.active = false;
 		}
+		var pct = enemyAttributes.hp / enemyAttributes.maxHp * 100;
+		$("#enemyhp").animate({ 'background-size': pct + "%"});
+	},
+	takeStamina: function(stamina) {
+		this.stamina -= stamina;
+		if(this.stamina <= 0)
+			this.stamina = 0;
+		var pct = enemyAttributes.stamina / enemyAttributes.maxStamina * 100;
+		$("#enemystamina").animate({ 'background-size': pct + "%"});
 	}
 };
 
@@ -167,9 +186,9 @@ function handleComplete() {
 	player2.regY = 400 / 2;
 	
 	player1.x = canvas.width / 2 - 65;
-	player1.y = 400 / 2;
+	player1.y = canvas.height / 2;
 	player2.x = canvas.width / 2 + 65;
-	player2.y = 400 / 2;
+	player2.y = canvas.height / 2;
 	
 	player2.scaleX = -1;
 
@@ -184,6 +203,14 @@ function handleComplete() {
 	countdownElement.x = $($countdown.parentElement).width() / 2;
 	countdownElement.y = canvas.height / 2;
 	stage.addChild(countdownElement);
+	
+	$console = $("#console").get(0);
+	consoleElement = new createjs.DOMElement($console);
+	consoleElement.regX = $($console).width();
+	consoleElement.regY = 0;
+	consoleElement.x = $($console.parentElement).width() / 2 - canvas.width / 2 + $($console).width();
+	consoleElement.y = 0;
+	stage.addChild(consoleElement);
 	
 	$playerhp = $("#playerhp").get(0);
 	playerHpElement = new createjs.DOMElement($playerhp);
@@ -217,55 +244,59 @@ function handleComplete() {
 	enemyStaminaElement.y = 10 + $($playerstamina).height();
 	stage.addChild(enemyStaminaElement);
 	
+	
+	//animate the setup
+	createjs.Tween.get(consoleElement).to({ alpha: 1, x: $($console.parentElement).width() / 2 - canvas.width / 2, y: 0, rotation: 0 }, 1000, createjs.Ease.quadIn);
+	
 
 	$("body").keydown(function(e) {
 		if(enableControls) {
 			console.log(e.which);
 			if(e.which == Keys.ONE) {
 				if(playerAttributes.stamina >= playerAttributes.cost[0]) {
-					playerAttributes.stamina -= playerAttributes.cost[0];
+					playerAttributes.takeStamina(playerAttributes.cost[0]);
 					moveQueue.push(new move(1, player1, playerAttributes.moves[0], playerAttributes.damage[0], 0));
 				}
 			}
 			else if(e.which == Keys.TWO) {
 				if(playerAttributes.stamina >= playerAttributes.cost[1]) {
-					playerAttributes.stamina -= playerAttributes.cost[1];
+					playerAttributes.takeStamina(playerAttributes.cost[1]);
 					moveQueue.push(new move(1, player1, playerAttributes.moves[1], playerAttributes.damage[1], 0));
 				}
 			}
 			else if(e.which == Keys.THREE) {
 				if(playerAttributes.stamina >= playerAttributes.cost[2]) {
-					playerAttributes.stamina -= playerAttributes.cost[2];
+					playerAttributes.takeStamina(playerAttributes.cost[2]);
 					moveQueue.push(new move(1, player1, playerAttributes.moves[2], playerAttributes.damage[2], 0));
 				}
 			}
 			else if(e.which == Keys.FOUR) {
 				if(playerAttributes.stamina >= playerAttributes.cost[3]) {
-					playerAttributes.stamina -= playerAttributes.cost[3];
+					playerAttributes.takeStamina(playerAttributes.cost[3]);
 					moveQueue.push(new move(1, player1, playerAttributes.moves[3], playerAttributes.damage[3], 0));
 				}
 			}
 			if(e.which == Keys.SEVEN) {
 				if(enemyAttributes.stamina >= enemyAttributes.cost[0]) {
-					enemyAttributes.stamina -= enemyAttributes.cost[0];
+					enemyAttributes.takeStamina(enemyAttributes.cost[0]);
 					moveQueue.push(new move(2, player2, enemyAttributes.moves[0], enemyAttributes.damage[0], 0));
 				}
 			}
 			else if(e.which == Keys.EIGHT) {
 				if(enemyAttributes.stamina >= enemyAttributes.cost[1]) {
-					enemyAttributes.stamina -= enemyAttributes.cost[1];
+					enemyAttributes.takeStamina(enemyAttributes.cost[1]);
 					moveQueue.push(new move(2, player2, enemyAttributes.moves[1], enemyAttributes.damage[1], 0));
 				}
 			}
 			else if(e.which == Keys.NINE) {
 				if(enemyAttributes.stamina >= enemyAttributes.cost[2]) {
-					enemyAttributes.stamina -= enemyAttributes.cost[2];
+					enemyAttributes.takeStamina(enemyAttributes.cost[2]);
 					moveQueue.push(new move(2, player2, enemyAttributes.moves[2], enemyAttributes.damage[2], 0));
 				}
 			}
 			else if(e.which == Keys.ZERO) {
 				if(enemyAttributes.stamina >= enemyAttributes.cost[3]) {
-					enemyAttributes.stamina -= enemyAttributes.cost[3];
+					enemyAttributes.takeStamina(enemyAttributes.cost[3]);
 					moveQueue.push(new move(2, player2, enemyAttributes.moves[3], enemyAttributes.damage[3], 0));
 				}
 			}
@@ -309,10 +340,11 @@ function draw() {
 	$("#countdown").text(countDown);
 	
 	//update bars
-	$("#playerhp").text(playerAttributes.hp + " / " + playerAttributes.maxHp);
-	$("#playerstamina").text(playerAttributes.stamina + " / " + playerAttributes.maxStamina);
-	$("#enemyhp").text(enemyAttributes.hp + " / " + enemyAttributes.maxHp);
-	$("#enemystamina").text(enemyAttributes.stamina + " / " + enemyAttributes.maxStamina);
+	$("#playerhp").text("HP: " + playerAttributes.hp + " / " + playerAttributes.maxHp);
+	$("#playerstamina").text("STA: " + playerAttributes.stamina + " / " + playerAttributes.maxStamina);
+	$("#enemyhp").text("HP: " + enemyAttributes.hp + " / " + enemyAttributes.maxHp);
+	$("#enemystamina").text("STA: " + enemyAttributes.stamina + " / " + enemyAttributes.maxStamina);
+	
 	
 	
 }
@@ -331,8 +363,8 @@ function decCount() {
 }
 
 function resize() {
-	ctx.canvas.width = 1024;
-	ctx.canvas.height = 768;
+	ctx.canvas.width = 800;
+	ctx.canvas.height = 600;
 }
 
 function updateDOMElements() {

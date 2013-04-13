@@ -1,0 +1,2 @@
+-Game that lets you create the enemies
+-Dungeon master game, place enemies against a human competitor.  Once a player clears a room, the DM cannot place monsters/traps there any longer.  Play online.

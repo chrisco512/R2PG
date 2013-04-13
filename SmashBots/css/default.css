@@ -1,5 +1,8 @@
 ﻿body {
 	background-color: cornflowerblue;
+	user-select: none;
+	-webkit-user-select: none;
+	-moz-user-select: none;
 }
 
 #canvas {
@@ -10,8 +13,15 @@
 	margin-bottom: auto;
 	margin-top: auto;
     display: block;
+	z-index: -1;
 }
 
+#console {
+	height: 600px;
+	width: 100px;
+	background-color: yellow;
+	z-index: -21;
+}
 #countdown {
 	width: 100%;
 	text-align: center;
@@ -23,32 +33,42 @@
 #playerhp {
 	height: 15px;
 	width: 200px;
-	background-color: blue;
 	font-size: 12px;
 	color: white;
+	background:url('../images/playerHp.png');
+	background-size:100% 100%;
+	background-repeat:no-repeat;
 }
 #enemyhp {
 	height: 15px;
 	width: 200px;
-	background-color: red;
 	font-size: 12px;
 	color: white;
 	text-align: right;
+	background:url('../images/enemyHp.png');
+	background-size:100% 100%;
+	background-position: right;
+	background-repeat:no-repeat;
 }
 #playerstamina {
 	height: 15px;
 	width: 200px;
-	background-color: green;
 	font-size: 12px;
 	color: white;
+	background:url('../images/stamina.png');
+	background-size:100% 100%;
+	background-repeat:no-repeat;
 }
 #enemystamina {
 	height: 15px;
 	width: 200px;
-	background-color: green;
 	font-size: 12px;
 	color: white;
 	text-align: right;
+	background:url('../images/stamina.png');
+	background-size:100% 100%;
+	background-position: right;
+	background-repeat:no-repeat;
 }
 
 @media screen and (-ms-view-state: fullscreen-landscape) {
