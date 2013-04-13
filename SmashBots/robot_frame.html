@@ -11,78 +11,29 @@
 <script src="lib/createjs/preloadjs-0.2.0.min.js"></script>
 <script src="lib/createjs/soundjs-0.4.0.min.js"></script>
 <script src="js/robot_frame.js"></script>
+<script src="js/main.js"></script>
 
-<script>
-var canvas, stage, player1, player2;
+<link rel="stylesheet" href="css/default.css" type="text/css" />
 
-function init() {
-	canvas = document.getElementById("canvas");
-	images = images||{};
-
-	var manifest = [
-		{src:"images/arm.png", id:"arm"},
-		{src:"images/fist_l.png", id:"fist_l"},
-		{src:"images/fist_r.png", id:"fist_r"},
-		{src:"images/foot.png", id:"foot"},
-		{src:"images/forearm.png", id:"forearm"},
-		{src:"images/head.png", id:"head"},
-		{src:"images/leg.png", id:"leg"},
-		{src:"images/pelvis.png", id:"pelvis"},
-		{src:"images/shin.png", id:"shin"},
-		{src:"images/torso.png", id:"torso"}
-	];
-
-	var loader = new createjs.PreloadJS(false);
-	loader.onFileLoad = handleFileLoad;
-	loader.onComplete = handleComplete;
-	loader.loadManifest(manifest);
-}
-
-function handleFileLoad(o) {
-	if (o.type == "image") { images[o.id] = o.result; }
-}
-
-function handleComplete() {
-	player1 = new lib.robot_frame();
-	player2 = new lib.robot_frame();
-	
-	player1.regX = 550 / 2;
-	player1.regY = 400 / 2;
-	player2.regX = 550 / 2;
-	player2.regY = 400 / 2;
-	
-	player1.x = 550 / 2 - 65;
-	player1.y = 400 / 2;
-	player2.x = 550 / 2 + 65;
-	player2.y = 400 / 2;
-	
-	player2.scaleX = -1;
-
-	stage = new createjs.Stage(canvas);
-	stage.addChild(player1);
-	stage.addChild(player2);
-	
-	$("body").keydown(function(e) {
-		console.log(e.which);
-		if(e.which == 65)
-			player1.gotoAndPlay("punch_l");
-		else if(e.which == 68)
-			player1.gotoAndPlay("punch_r");
-		else if(e.which == 37)
-			player2.gotoAndPlay("punch_r");
-		else if(e.which == 39)
-			player2.gotoAndPlay("punch_l");
-	});
-	
-	stage.update();
-	
-	createjs.Ticker.setFPS(16);
-	createjs.Ticker.addListener(stage);
-}
-</script>
 </head>
 
-<body onload="init();" style="background-color:#D4D4D4">
-	<canvas id="canvas" width="550" height="400" style="background-color:#ffffff"></canvas>
+<body onload="init();">
+	<div>
+		<div id="countdown">3</div>
+		<div id="playerhp">
+			100/100
+		</div>
+		<div id="enemyhp">
+			100/100
+		</div>
+		<div id="playerstamina">
+			20/20
+		</div>
+		<div id="enemystamina">
+			20/20
+		</div>
+		<canvas id="canvas" style="background-color:#ffffff">Your browser is too old and cannot support this game.</canvas>
+		
+	</div>
 </body>
 </html>

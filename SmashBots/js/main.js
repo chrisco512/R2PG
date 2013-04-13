@@ -1,28 +1,127 @@
-var canvas, stage, player1, player2;
+var canvas, ctx, stage, player1, player2;
+var countDownInterval;
+var countdownElement;
+var playerHpElement, enemyHpElement, playerStaminaElement, enemyStaminaElement;
+var countDown = 3;
+var gameState;
+var enableControls;
+var moveExecuting;
+var moveQueue = [];
+
+function move(playerNumber, player, moveId, damage, index) {
+	return {
+		playerNumber: playerNumber,
+		player: player,
+		moveId: moveId,
+		damage: damage,
+		index: index
+	};
+}
 
 var playerAttributes = {
+	index: 1,
+	maxHp: 100,
 	hp: 100,
 	stamina: 20,
-	moves: [ "a", "b", "c", "d", "aba" ]
-};
-var enemyAttributes = {
-	hp: 100,
-	stamina: 20,
-	moves: [ "a", "b", "c", "d", "aba" ]
+	maxStamina: 20,
+	moves:	[	"aba",	"abba",	"acbd",	"ddcc"	],
+	damage:	[	10,		20,		30,		40		],
+	cost:	[	1,		3,		5,		7		],
+	active: true,
+	takeDamage: function(damage) {
+		this.hp -= damage;
+		if (this.hp <= 0) {
+			this.hp = 0;
+			this.active = false;
+		}
+	}
 };
 
-//var GameStates = [ "CountDown", "Fight", "EndMatch" ];
+var enemyAttributes = {
+	index: 2,
+	hp: 100,
+	maxHp: 100,
+	maxStamina: 20,
+	stamina: 20,
+	moves:	[	"aba",	"abba",	"acbd",	"ddcc"	],
+	damage:	[	10,		20,		30,		40		],
+	active: true,
+	takeDamage: function(damage) {
+		this.hp -= damage;
+		if (this.hp <= 0) {
+			this.hp = 0;
+			this.active = false;
+		}
+	}
+};
+
 var GS = {
 	CountDown: 0,
 	Fight: 1,
-	EndMatch: 2
+	End: 2
 };
-var gameState;
 
+var Keys = {
+	LEFT: 37,
+	RIGHT: 39,
+	UP: 38, 
+	DOWN: 40,
+	A: 65,
+	D: 68,
+	ZERO: 48,
+	ONE: 49,
+	TWO: 50,
+	THREE: 51,
+	FOUR: 52,
+	FIVE: 53,
+	SIX: 54,
+	SEVEN: 55,
+	EIGHT: 56,
+	NINE: 57
+};
 
+function executeMove(move) {
+	moveExecuting = true;
+	// var self = this;
+	// self.moveId = moveId;
+	// self.index = index;
+	var time = 0;
+	var moveString = move.moveId[move.index];
+	switch(moveString) {
+		case "a":
+			move.player.gotoAndPlay("punch_l");
+			time = 300;
+			break;
+		case "b":
+			move.player.gotoAndPlay("punch_r");
+			time = 300;
+			break;
+		case "c":
+			move.player.gotoAndPlay("kick_l");
+			time = 600;
+			break;
+		case "d":
+			move.player.gotoAndPlay("kick_r");
+			time = 600;
+			break;
+	}
+	move.index++;
+	if(move.index < move.moveId.length)
+		setTimeout(function() { executeMove(move); }, time);
+	else {
+		moveExecuting = false;
+		if(move.playerNumber === 1)
+			enemyAttributes.takeDamage(move.damage);
+		else
+			playerAttributes.takeDamage(move.damage);
+	}
+}
 
 function init() {
 	canvas = document.getElementById("canvas");
+	ctx = canvas.getContext("2d");
+	resize();
+	
 	images = images||{};
 
 	var manifest = [
@@ -43,7 +142,15 @@ function init() {
 	loader.onComplete = handleComplete;
 	loader.loadManifest(manifest);
 	
+	//setTimeout(decCount, 1000);
+	
 	gameState = GS.CountDown;
+	
+	countDownInterval = setInterval(decCount, 1000);
+	
+	enableControls = false;
+	
+	moveExecuting = false;
 }
 
 function handleFileLoad(o) {
@@ -53,15 +160,15 @@ function handleFileLoad(o) {
 function handleComplete() {
 	player1 = new lib.robot_frame();
 	player2 = new lib.robot_frame();
-	
+
 	player1.regX = 550 / 2;
 	player1.regY = 400 / 2;
 	player2.regX = 550 / 2;
 	player2.regY = 400 / 2;
 	
-	player1.x = 550 / 2 - 65;
+	player1.x = canvas.width / 2 - 65;
 	player1.y = 400 / 2;
-	player2.x = 550 / 2 + 65;
+	player2.x = canvas.width / 2 + 65;
 	player2.y = 400 / 2;
 	
 	player2.scaleX = -1;
@@ -70,20 +177,103 @@ function handleComplete() {
 	stage.addChild(player1);
 	stage.addChild(player2);
 	
+	$countdown = $("#countdown").get(0);
+	countdownElement = new createjs.DOMElement($countdown);
+	countdownElement.regX = $($countdown).width() / 2;
+	countdownElement.regY = $($countdown).height() / 2;
+	countdownElement.x = $($countdown.parentElement).width() / 2;
+	countdownElement.y = canvas.height / 2;
+	stage.addChild(countdownElement);
+	
+	$playerhp = $("#playerhp").get(0);
+	playerHpElement = new createjs.DOMElement($playerhp);
+	playerHpElement.regX = 0;
+	playerHpElement.regY = 0;
+	playerHpElement.x = $($playerhp.parentElement).width() / 2 - canvas.width / 2 + 10;
+	playerHpElement.y = 10;
+	stage.addChild(playerHpElement);
+	
+	$enemyhp = $("#enemyhp").get(0);
+	enemyHpElement = new createjs.DOMElement($enemyhp);
+	enemyHpElement.regX = $($enemyhp).width();
+	enemyHpElement.regY = 0;
+	enemyHpElement.x = ($($playerhp.parentElement).width() - canvas.width) / 2 + canvas.width - 10;
+	enemyHpElement.y = 10;
+	stage.addChild(enemyHpElement);
+	
+	$playerstamina = $("#playerstamina").get(0);
+	playerStaminaElement = new createjs.DOMElement($playerstamina);
+	playerStaminaElement.regX = 0;
+	playerStaminaElement.regY = 0;
+	playerStaminaElement.x = $($playerhp.parentElement).width() / 2 - canvas.width / 2 + 10;
+	playerStaminaElement.y = 10 + $($playerstamina).height();
+	stage.addChild(playerStaminaElement);
+	
+	$enemystamina = $("#enemystamina").get(0);
+	enemyStaminaElement = new createjs.DOMElement($enemystamina);
+	enemyStaminaElement.regX = $($enemyhp).width();
+	enemyStaminaElement.regY = 0;
+	enemyStaminaElement.x = ($($playerhp.parentElement).width() - canvas.width) / 2 + canvas.width - 10;
+	enemyStaminaElement.y = 10 + $($playerstamina).height();
+	stage.addChild(enemyStaminaElement);
+	
+
 	$("body").keydown(function(e) {
-		console.log(e.which);
-		if(e.which == 65)
-			player1.gotoAndPlay("punch_l");
-		else if(e.which == 68)
-			player1.gotoAndPlay("punch_r");
-		else if(e.which == 37)
-			player2.gotoAndPlay("punch_r");
-		else if(e.which == 39)
-			player2.gotoAndPlay("punch_l");
+		if(enableControls) {
+			console.log(e.which);
+			if(e.which == Keys.ONE) {
+				if(playerAttributes.stamina >= playerAttributes.cost[0]) {
+					playerAttributes.stamina -= playerAttributes.cost[0];
+					moveQueue.push(new move(1, player1, playerAttributes.moves[0], playerAttributes.damage[0], 0));
+				}
+			}
+			else if(e.which == Keys.TWO) {
+				if(playerAttributes.stamina >= playerAttributes.cost[1]) {
+					playerAttributes.stamina -= playerAttributes.cost[1];
+					moveQueue.push(new move(1, player1, playerAttributes.moves[1], playerAttributes.damage[1], 0));
+				}
+			}
+			else if(e.which == Keys.THREE) {
+				if(playerAttributes.stamina >= playerAttributes.cost[2]) {
+					playerAttributes.stamina -= playerAttributes.cost[2];
+					moveQueue.push(new move(1, player1, playerAttributes.moves[2], playerAttributes.damage[2], 0));
+				}
+			}
+			else if(e.which == Keys.FOUR) {
+				if(playerAttributes.stamina >= playerAttributes.cost[3]) {
+					playerAttributes.stamina -= playerAttributes.cost[3];
+					moveQueue.push(new move(1, player1, playerAttributes.moves[3], playerAttributes.damage[3], 0));
+				}
+			}
+			if(e.which == Keys.SEVEN) {
+				if(enemyAttributes.stamina >= enemyAttributes.cost[0]) {
+					enemyAttributes.stamina -= enemyAttributes.cost[0];
+					moveQueue.push(new move(2, player2, enemyAttributes.moves[0], enemyAttributes.damage[0], 0));
+				}
+			}
+			else if(e.which == Keys.EIGHT) {
+				if(enemyAttributes.stamina >= enemyAttributes.cost[1]) {
+					enemyAttributes.stamina -= enemyAttributes.cost[1];
+					moveQueue.push(new move(2, player2, enemyAttributes.moves[1], enemyAttributes.damage[1], 0));
+				}
+			}
+			else if(e.which == Keys.NINE) {
+				if(enemyAttributes.stamina >= enemyAttributes.cost[2]) {
+					enemyAttributes.stamina -= enemyAttributes.cost[2];
+					moveQueue.push(new move(2, player2, enemyAttributes.moves[2], enemyAttributes.damage[2], 0));
+				}
+			}
+			else if(e.which == Keys.ZERO) {
+				if(enemyAttributes.stamina >= enemyAttributes.cost[3]) {
+					enemyAttributes.stamina -= enemyAttributes.cost[3];
+					moveQueue.push(new move(2, player2, enemyAttributes.moves[3], enemyAttributes.damage[3], 0));
+				}
+			}
+		}
 	});
-	
+
 	stage.update();
-	
+
 	createjs.Ticker.setFPS(16);
 	createjs.Ticker.addListener(stage);
 	createjs.Ticker.addListener(update);
@@ -91,4 +281,60 @@ function handleComplete() {
 
 function update() {
 	console.log("Update");
+	
+	updateDOMElements();
+	
+	if(gameState === GS.Fight) {
+		enableControls = true;
+		if(!moveExecuting) {
+			if(moveQueue.length > 0)
+				executeMove(moveQueue.shift());
+		}
+		if(!playerAttributes.active || !enemyAttributes.active) {
+			gameState = GS.End;
+		}
+	} else if(gameState === GS.End) {
+		enableControls = false;
+		ctx.font = "30px Arial";
+		if(!enemyAttributes.active)
+			ctx.fillText("YOU WIN", canvas.width / 2, canvas.height / 2);
+		else
+			ctx.fillText("YOU LOSE", canvas.width / 2, canvas.height / 2);
+	}
+	
+	draw();
+}
+
+function draw() {
+	$("#countdown").text(countDown);
+	
+	//update bars
+	$("#playerhp").text(playerAttributes.hp + " / " + playerAttributes.maxHp);
+	$("#playerstamina").text(playerAttributes.stamina + " / " + playerAttributes.maxStamina);
+	$("#enemyhp").text(enemyAttributes.hp + " / " + enemyAttributes.maxHp);
+	$("#enemystamina").text(enemyAttributes.stamina + " / " + enemyAttributes.maxStamina);
+	
+	
+}
+
+function decCount() {
+	console.log("dec cnt");
+	if(countDown > 1) {
+		countDown -= 1;
+	} else if(countDown === 1) {
+		countDown = "FIGHT!";
+		$("#countdown").fadeOut();
+	} else {
+		clearInterval(countDownInterval);
+		gameState = GS.Fight;
+	}
+}
+
+function resize() {
+	ctx.canvas.width = 1024;
+	ctx.canvas.height = 768;
+}
+
+function updateDOMElements() {
+	
 }
