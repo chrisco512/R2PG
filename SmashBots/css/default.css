@@ -50,6 +50,16 @@
 	background-position: right;
 	background-repeat:no-repeat;
 }
+
+table {
+        width: 100%;
+        padding: 10px;
+        height: 75%;
+        top: 5%;
+        position: absolute;
+        text-align: center;
+    }
+
 #playerstamina {
 	height: 15px;
 	width: 200px;
