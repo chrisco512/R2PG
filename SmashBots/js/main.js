@@ -1,7 +1,8 @@
 var canvas, ctx, stage, player1, player2;
-var countDownInterval, staminaUpdateInterval;
+var countDownInterval;
 var countdownElement;
 var playerHpElement, enemyHpElement, playerStaminaElement, enemyStaminaElement, consoleElement;
+var iconElement1, iconElement2;
 var countDown = 3;
 var gameState;
 var enableControls;
@@ -9,9 +10,12 @@ var moveExecuting;
 var moveQueue = [];
 var FPS = 16;
 var pct;
+var currentMove, currentMoveIcon;
+var icons = [];
 
-function move(playerNumber, player, moveId, damage, index) {
+function move(moveNumber, playerNumber, player, moveId, damage, index) {
 	return {
+		moveNumber: moveNumber,
 		playerNumber: playerNumber,
 		player: player,
 		moveId: moveId,
@@ -123,10 +127,14 @@ var MoveList = {
 };
 
 function executeMove(move) {
+	if(move.index >= move.moveId.length) {
+		moveExecuting = false;
+		removeMoveDisplay();
+		return;
+	}
 	moveExecuting = true;
-	// var self = this;
-	// self.moveId = moveId;
-	// self.index = index;
+	//moveIconDown(move.index + 1);
+	updateIcons(move.index + 1);
 	var time = 0;
 	var moveString = move.moveId[move.index];
 	switch(moveString) {
@@ -164,18 +172,12 @@ function executeMove(move) {
 			break;
 	}
 	move.index++;
-	if(move.index < move.moveId.length)
-		setTimeout(function() { executeMove(move); }, time);
-	else {
-		moveExecuting = false;
-	}
+	setTimeout(function() { executeMove(move); }, time);
 }
 
 function init() {
 	canvas = document.getElementById("canvas");
 	ctx = canvas.getContext("2d");
-	// bg_img = document.getElementById("futuristic_bg");
-	// ctx.drawImage(bg_img, 0, 0);
 	
 	resize();
 	
@@ -198,8 +200,6 @@ function init() {
 	loader.onFileLoad = handleFileLoad;
 	loader.onComplete = handleComplete;
 	loader.loadManifest(manifest);
-	
-	//setTimeout(decCount, 1000);
 	
 	gameState = GS.CountDown;
 	
@@ -282,7 +282,6 @@ function handleComplete() {
 	enemyStaminaElement.y = 10 + $($playerstamina).height();
 	stage.addChild(enemyStaminaElement);
 	
-	
 	//animate the setup
 	createjs.Tween.get(consoleElement).to({ alpha: 1, x: $($console.parentElement).width() / 2 - canvas.width / 2, y: 0, rotation: 0 }, 1000, createjs.Ease.quadIn);
 	
@@ -293,55 +292,58 @@ function handleComplete() {
 			if(e.which == Keys.ONE) {
 				if(playerAttributes.stamina >= playerAttributes.cost[0]) {
 					playerAttributes.takeStamina(playerAttributes.cost[0]);
-					moveQueue.push(new move(1, player1, playerAttributes.moves[0], playerAttributes.damage[0], 0));
+					moveQueue.push(new move(1, 1, player1, playerAttributes.moves[0], playerAttributes.damage[0], 0));
 				}
 			}
 			else if(e.which == Keys.TWO) {
 				if(playerAttributes.stamina >= playerAttributes.cost[1]) {
 					playerAttributes.takeStamina(playerAttributes.cost[1]);
-					moveQueue.push(new move(1, player1, playerAttributes.moves[1], playerAttributes.damage[1], 0));
+					moveQueue.push(new move(2, 1, player1, playerAttributes.moves[1], playerAttributes.damage[1], 0));
 				}
 			}
 			else if(e.which == Keys.THREE) {
 				if(playerAttributes.stamina >= playerAttributes.cost[2]) {
 					playerAttributes.takeStamina(playerAttributes.cost[2]);
-					moveQueue.push(new move(1, player1, playerAttributes.moves[2], playerAttributes.damage[2], 0));
+					moveQueue.push(new move(3, 1, player1, playerAttributes.moves[2], playerAttributes.damage[2], 0));
 				}
 			}
 			else if(e.which == Keys.FOUR) {
 				if(playerAttributes.stamina >= playerAttributes.cost[3]) {
 					playerAttributes.takeStamina(playerAttributes.cost[3]);
-					moveQueue.push(new move(1, player1, playerAttributes.moves[3], playerAttributes.damage[3], 0));
+					moveQueue.push(new move(4, 1, player1, playerAttributes.moves[3], playerAttributes.damage[3], 0));
 				}
 			}
 			if(e.which == Keys.SEVEN) {
 				if(enemyAttributes.stamina >= enemyAttributes.cost[0]) {
 					enemyAttributes.takeStamina(enemyAttributes.cost[0]);
-					moveQueue.push(new move(2, player2, enemyAttributes.moves[0], enemyAttributes.damage[0], 0));
+					moveQueue.push(new move(1, 2, player2, enemyAttributes.moves[0], enemyAttributes.damage[0], 0));
 				}
 			}
 			else if(e.which == Keys.EIGHT) {
 				if(enemyAttributes.stamina >= enemyAttributes.cost[1]) {
 					enemyAttributes.takeStamina(enemyAttributes.cost[1]);
-					moveQueue.push(new move(2, player2, enemyAttributes.moves[1], enemyAttributes.damage[1], 0));
+					moveQueue.push(new move(2, 2, player2, enemyAttributes.moves[1], enemyAttributes.damage[1], 0));
 				}
 			}
 			else if(e.which == Keys.NINE) {
 				if(enemyAttributes.stamina >= enemyAttributes.cost[2]) {
 					enemyAttributes.takeStamina(enemyAttributes.cost[2]);
-					moveQueue.push(new move(2, player2, enemyAttributes.moves[2], enemyAttributes.damage[2], 0));
+					moveQueue.push(new move(3, 2, player2, enemyAttributes.moves[2], enemyAttributes.damage[2], 0));
 				}
 			}
 			else if(e.which == Keys.ZERO) {
 				if(enemyAttributes.stamina >= enemyAttributes.cost[3]) {
 					enemyAttributes.takeStamina(enemyAttributes.cost[3]);
-					moveQueue.push(new move(2, player2, enemyAttributes.moves[3], enemyAttributes.damage[3], 0));
+					moveQueue.push(new move(4, 2, player2, enemyAttributes.moves[3], enemyAttributes.damage[3], 0));
 				}
 			}
 		}
 	});
 	
-	staminaUpdateInterval = setInterval(updateStamina, 1000);
+	// currentMoveIcon = new createjs.Bitmap("images/button_1.jpg");
+	// currentMoveIcon.x = 100;
+	// currentMoveIcon.y = 100;
+	// stage.addChild(currentMoveIcon);
 	
 	stage.update();
 
@@ -357,16 +359,17 @@ function update() {
 		enableControls = true;
 		
 		playerAttributes.rechargeStamina();
-		//pct = Math.floor(playerAttributes.stamina) / playerAttributes.maxStamina * 100;
-		//$("#playerstamina").animate({ 'background-size': pct + "%"}, 1000 / FPS);
 		
 		enemyAttributes.rechargeStamina();
 		pct = Math.floor(enemyAttributes.stamina) / enemyAttributes.maxStamina * 100;
 		$("#enemystamina").animate({ 'background-size': pct + "%"}, 1000 / FPS);
 		
 		if(!moveExecuting) {
-			if(moveQueue.length > 0)
-				executeMove(moveQueue.shift());
+			if(moveQueue.length > 0) {
+				currentMove = moveQueue.shift();
+				displayMove(currentMove);
+				executeMove(currentMove);
+			}
 		}
 		
 		if(!playerAttributes.active || !enemyAttributes.active) {
@@ -377,9 +380,9 @@ function update() {
 		enableControls = false;
 		ctx.font = "30px Arial";
 		if(!enemyAttributes.active)
-			ctx.fillText("YOU WIN", canvas.width / 2, canvas.height / 2);
+			ctx.fillText("YOU WIN", canvas.width / 2 - 70, canvas.height / 2);
 		else
-			ctx.fillText("YOU LOSE", canvas.width / 2, canvas.height / 2);
+			ctx.fillText("YOU LOSE", canvas.width / 2 - 80, canvas.height / 2);
 	}
 	
 	draw();
@@ -416,6 +419,69 @@ function resize() {
 	ctx.canvas.height = 600;
 }
 
-function updateStamina() {
+function displayMove(move) {
+	var x, y;
+	y = 510;
+	if((move.moveId.length + 1) % 2 === 0)
+		x = canvas.width / 2 - (43 + 20) * (move.moveId.length + 1) / 2 + 20 - 20 / 2;
+	else
+		x = canvas.width / 2 - (43 + 20) * move.moveId.length / 2 - 43 / 2;
+	switch(move.moveNumber) {
+		case 1:
+			icons[0] = new createjs.Bitmap("images/button_1.jpg");
+			break;
+		case 2:
+			icons[0] = new createjs.Bitmap("images/button_2.jpg");
+			break;
+		case 3:
+			icons[0] = new createjs.Bitmap("images/button_3.jpg");
+			break;
+		case 4:
+			icons[0] = new createjs.Bitmap("images/button_4.jpg");
+			break;
+	}
+	icons[0].x = x;
+	icons[0].y = y;
+	stage.addChild(icons[0]);
+	x += 43 + 20;
+	for(var i = 0; i < move.moveId.length; i++) {
+		switch(move.moveId[i]) {
+			case MoveList.PUNCH_L:
+				icons[i+1] = new createjs.Bitmap("images/dummy_icon_1.png");
+				break;
+			case MoveList.PUNCH_R:
+				icons[i+1] = new createjs.Bitmap("images/dummy_icon_2.png");
+				break;
+			case MoveList.KICK_L:
+				icons[i+1] = new createjs.Bitmap("images/dummy_icon_3.png");
+				break;
+			case MoveList.KICK_R:
+				icons[i+1] = new createjs.Bitmap("images/dummy_icon_4.png");
+				break;
+		}
+		icons[i+1].x = x;
+		icons[i+1].y = y;
+		stage.addChild(icons[i+1]);
+		x += 43 + 20;
+	}
+}
+
+function updateIcons(index) {
+	//move leftmost icon down off of the screen
+	createjs.Tween.get(icons[index]).to({y:600}, 100, createjs.Ease.linear);
 	
+	//move the rest of the icons left
+	for(var i = index + 1; i < icons.length; i++)
+		createjs.Tween.get(icons[i]).to({x:(icons[i].x - 43 - 20)}, 100, createjs.Ease.linear);
+}
+
+function moveIconDown(index) {
+	createjs.Tween.get(icons[index]).to({y:600}, 100, createjs.Ease.linear);
+}
+
+function removeMoveDisplay() {
+	for(var i = 0; i < icons.length; i++) {
+		stage.removeChild(icons[i]);
+	}
+	icons.length = 0;
 }
