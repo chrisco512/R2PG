@@ -1,8 +1,7 @@
 var canvas, ctx, stage, player1, player2;
 var countDownInterval;
 var countdownElement;
-var playerHpElement, enemyHpElement, playerStaminaElement, enemyStaminaElement, consoleElement;
-var iconElement1, iconElement2;
+var playerHpElement, enemyHpElement, playerStaminaElement, enemyStaminaElement, consoleElement, console_rElement;
 var countDown = 3;
 var gameState;
 var enableControls;
@@ -48,6 +47,9 @@ var playerAttributes = {
 		this.stamina -= stamina;
 		if(this.stamina <= 0)
 			this.stamina = 0;
+		this.animatingStamina = true;
+		pct = Math.floor(playerAttributes.stamina) / playerAttributes.maxStamina * 100;		
+		$("#playerstamina").animate({ 'background-size': pct + "%"}, 250, "swing", function() { playerAttributes.animatingStamina = false; } );
 	},
 	animatingStamina: false,
 	rechargeStamina: function() {
@@ -82,15 +84,23 @@ var enemyAttributes = {
 		pct = enemyAttributes.hp / enemyAttributes.maxHp * 100;
 		$("#enemyhp").animate({ 'background-size': pct + "%"}, 100);
 	},
+	animatingStamina: false,
 	takeStamina: function(stamina) {
 		this.stamina -= stamina;
 		if(this.stamina <= 0)
 			this.stamina = 0;
+		pct = Math.floor(enemyAttributes.stamina) / enemyAttributes.maxStamina * 100;		
+		$("#enemystamina").animate({ 'background-size': pct + "%"}, 250, "swing", function() { enemyAttributes.animatingStamina = false; } );
 	},
 	rechargeStamina: function() {
 		this.stamina += this.rechargeRate / FPS;
 		if(this.stamina > this.maxStamina)
 			this.stamina = this.maxStamina;
+		if(!this.animatingStamina) {
+			this.animatingStamina = true;
+			pct = Math.floor(enemyAttributes.stamina) / enemyAttributes.maxStamina * 100;
+			$("#enemystamina").animate({ 'background-size': pct + "%"}, 1000 / FPS, "swing", function() { enemyAttributes.animatingStamina = false; });
+		}
 	}
 };
 
@@ -250,6 +260,14 @@ function handleComplete() {
 	consoleElement.y = 0;
 	stage.addChild(consoleElement);
 	
+	$console_r = $("#console_r").get(0);
+	console_rElement = new createjs.DOMElement($console_r);
+	console_rElement.regX = 0;
+	console_rElement.regY = 0;
+	console_rElement.x = $($console_r.parentElement).width() / 2 + canvas.width / 2 - $($console_r).width();
+	console_rElement.y = 0;
+	stage.addChild(console_rElement);
+	
 	$playerhp = $("#playerhp").get(0);
 	playerHpElement = new createjs.DOMElement($playerhp);
 	playerHpElement.regX = 0;
@@ -271,7 +289,7 @@ function handleComplete() {
 	playerStaminaElement.regX = 0;
 	playerStaminaElement.regY = 0;
 	playerStaminaElement.x = $($playerhp.parentElement).width() / 2 - canvas.width / 2 + 10;
-	playerStaminaElement.y = 10 + $($playerstamina).height();
+	playerStaminaElement.y = 10 + $($playerhp).height();
 	stage.addChild(playerStaminaElement);
 	
 	$enemystamina = $("#enemystamina").get(0);
@@ -279,11 +297,12 @@ function handleComplete() {
 	enemyStaminaElement.regX = $($enemyhp).width();
 	enemyStaminaElement.regY = 0;
 	enemyStaminaElement.x = ($($playerhp.parentElement).width() - canvas.width) / 2 + canvas.width - 10;
-	enemyStaminaElement.y = 10 + $($playerstamina).height();
+	enemyStaminaElement.y = 10 + $($enemyhp).height();
 	stage.addChild(enemyStaminaElement);
 	
 	//animate the setup
-	createjs.Tween.get(consoleElement).to({ alpha: 1, x: $($console.parentElement).width() / 2 - canvas.width / 2, y: 0, rotation: 0 }, 1000, createjs.Ease.quadIn);
+	createjs.Tween.get(consoleElement).to({ alpha: 1, x: $($console.parentElement).width() / 2 - canvas.width / 2, y: 0, rotation: 0 }, 1500, createjs.Ease.quadIn);
+	createjs.Tween.get(console_rElement).to({ alpha: 1, x: $($console.parentElement).width() / 2 + canvas.width / 2, y: 0, rotation: 0 }, 1500, createjs.Ease.quadIn);
 	
 
 	$("body").keydown(function(e) {
@@ -352,6 +371,54 @@ function handleComplete() {
 	createjs.Ticker.addListener(update);
 }
 
+var moveImgHtml = "<div class='moveQImg'></div>";
+
+function addMoveToConsole() {
+	$(moveImgHtml).prependTo("#console_r");
+	animateMoveConsole();
+}
+
+function animateMoveConsole(removing) {
+	var moveConsoleMoves = $("#console_r").children();
+	var i, moveDiv;
+	var size = moveConsoleMoves.length < 5 ? moveConsoleMoves.length : 5;
+	for(i = 0; i < size; i++) {
+		moveDiv = moveConsoleMoves[moveConsoleMoves.length - 1 - i];
+		switch(i) {
+			case 0: 
+				$(moveDiv).animate({ 'right' : '100px' }).animate({ 'bottom' : '40px' });
+				break;
+			case 1:
+				if(!removing && size < 5)
+					$(moveDiv).animate({ 'right' : '0px' }).animate({ 'bottom' : '40px' });
+				else
+					$(moveDiv).animate({ 'bottom' : '40px' });
+				break;
+			case 2: 
+				if(!removing && size < 5)
+					$(moveDiv).animate({ 'right' : '0px' }).animate({ 'bottom' : '180px' });
+				else
+					$(moveDiv).animate({ 'bottom' : '180px' });
+				break;
+			case 3:
+				if(!removing && size < 5)
+					$(moveDiv).animate({ 'right' : '0px' }).animate({ 'bottom' : '320px' });
+				else
+					$(moveDiv).animate({ 'bottom' : '320px' });
+				break;
+			case 4:
+				$(moveDiv).animate({ 'right' : '0px' }).animate({ 'bottom' : '460px' });
+				break;
+		}
+		
+	}
+}
+
+function removeMoveFromConsole() {
+	$("#console_r").children().last().remove();
+	animateMoveConsole(true);
+}
+
 function update() {
 	console.log("Update");
 	
@@ -359,10 +426,7 @@ function update() {
 		enableControls = true;
 		
 		playerAttributes.rechargeStamina();
-		
 		enemyAttributes.rechargeStamina();
-		pct = Math.floor(enemyAttributes.stamina) / enemyAttributes.maxStamina * 100;
-		$("#enemystamina").animate({ 'background-size': pct + "%"}, 1000 / FPS);
 		
 		if(!moveExecuting) {
 			if(moveQueue.length > 0) {
