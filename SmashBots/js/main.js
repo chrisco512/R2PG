@@ -1,5 +1,5 @@
 var canvas, ctx, stage, player1, player2;
-var countDownInterval;
+var countDownInterval, staminaUpdateInterval;
 var countdownElement;
 var playerHpElement, enemyHpElement, playerStaminaElement, enemyStaminaElement, consoleElement;
 var countDown = 3;
@@ -7,6 +7,8 @@ var gameState;
 var enableControls;
 var moveExecuting;
 var moveQueue = [];
+var FPS = 16;
+var pct;
 
 function move(playerNumber, player, moveId, damage, index) {
 	return {
@@ -24,25 +26,35 @@ var playerAttributes = {
 	hp: 100,
 	stamina: 20,
 	maxStamina: 20,
+	rechargeRate: 1, //recharges x stamina per second
 	moves:	[	"aba",	"abba",	"acbd",	"ddcc"	],
 	damage:	[	10,		20,		30,		40		],
 	cost:	[	1,		3,		5,		7		],
 	active: true,
 	takeDamage: function(damage) {
 		this.hp -= damage;
-		if (this.hp <= 0) {
+		if(this.hp <= 0) {
 			this.hp = 0;
 			this.active = false;
 		}
-		var pct = playerAttributes.hp / playerAttributes.maxHp * 100;
+		pct = playerAttributes.hp / playerAttributes.maxHp * 100;
 		$("#playerhp").animate({ 'background-size': pct + "%"});
 	},
 	takeStamina: function(stamina) {
 		this.stamina -= stamina;
 		if(this.stamina <= 0)
 			this.stamina = 0;
-		var pct = playerAttributes.stamina / playerAttributes.maxStamina * 100;
-		$("#playerstamina").animate({ 'background-size': pct + "%"});
+	},
+	animatingStamina: false,
+	rechargeStamina: function() {
+		this.stamina += this.rechargeRate / FPS;
+		if(this.stamina > this.maxStamina)
+			this.stamina = this.maxStamina;
+		if(!this.animatingStamina) {
+			this.animatingStamina = true;
+			pct = Math.floor(playerAttributes.stamina) / playerAttributes.maxStamina * 100;
+			$("#playerstamina").animate({ 'background-size': pct + "%"}, 1000 / FPS, "swing", function() { playerAttributes.animatingStamina = false; });
+		}
 	}
 };
 
@@ -52,6 +64,7 @@ var enemyAttributes = {
 	maxHp: 100,
 	maxStamina: 20,
 	stamina: 20,
+	rechargeRate: 1, //recharges x stamina per second
 	moves:	[	"aba",	"abba",	"acbd",	"ddcc"	],
 	damage:	[	10,		20,		30,		40		],
 	cost:	[	1,		3,		5,		7		],
@@ -62,15 +75,18 @@ var enemyAttributes = {
 			this.hp = 0;
 			this.active = false;
 		}
-		var pct = enemyAttributes.hp / enemyAttributes.maxHp * 100;
+		pct = enemyAttributes.hp / enemyAttributes.maxHp * 100;
 		$("#enemyhp").animate({ 'background-size': pct + "%"});
 	},
 	takeStamina: function(stamina) {
 		this.stamina -= stamina;
 		if(this.stamina <= 0)
 			this.stamina = 0;
-		var pct = enemyAttributes.stamina / enemyAttributes.maxStamina * 100;
-		$("#enemystamina").animate({ 'background-size': pct + "%"});
+	},
+	rechargeStamina: function() {
+		this.stamina += this.rechargeRate / FPS;
+		if(this.stamina > this.maxStamina)
+			this.stamina = this.maxStamina;
 	}
 };
 
@@ -139,6 +155,9 @@ function executeMove(move) {
 function init() {
 	canvas = document.getElementById("canvas");
 	ctx = canvas.getContext("2d");
+	// bg_img = document.getElementById("futuristic_bg");
+	// ctx.drawImage(bg_img, 0, 0);
+	
 	resize();
 	
 	images = images||{};
@@ -302,10 +321,12 @@ function handleComplete() {
 			}
 		}
 	});
-
+	
+	staminaUpdateInterval = setInterval(updateStamina, 1000);
+	
 	stage.update();
 
-	createjs.Ticker.setFPS(16);
+	createjs.Ticker.setFPS(FPS);
 	createjs.Ticker.addListener(stage);
 	createjs.Ticker.addListener(update);
 }
@@ -313,17 +334,26 @@ function handleComplete() {
 function update() {
 	console.log("Update");
 	
-	updateDOMElements();
-	
 	if(gameState === GS.Fight) {
 		enableControls = true;
+		
+		playerAttributes.rechargeStamina();
+		//pct = Math.floor(playerAttributes.stamina) / playerAttributes.maxStamina * 100;
+		//$("#playerstamina").animate({ 'background-size': pct + "%"}, 1000 / FPS);
+		
+		enemyAttributes.rechargeStamina();
+		pct = Math.floor(enemyAttributes.stamina) / enemyAttributes.maxStamina * 100;
+		$("#enemystamina").animate({ 'background-size': pct + "%"}, 1000 / FPS);
+		
 		if(!moveExecuting) {
 			if(moveQueue.length > 0)
 				executeMove(moveQueue.shift());
 		}
+		
 		if(!playerAttributes.active || !enemyAttributes.active) {
 			gameState = GS.End;
 		}
+		
 	} else if(gameState === GS.End) {
 		enableControls = false;
 		ctx.font = "30px Arial";
@@ -337,13 +367,14 @@ function update() {
 }
 
 function draw() {
+	
 	$("#countdown").text(countDown);
 	
 	//update bars
 	$("#playerhp").text("HP: " + playerAttributes.hp + " / " + playerAttributes.maxHp);
-	$("#playerstamina").text("STA: " + playerAttributes.stamina + " / " + playerAttributes.maxStamina);
+	$("#playerstamina").text("STA: " + Math.floor(playerAttributes.stamina) + " / " + playerAttributes.maxStamina);
 	$("#enemyhp").text("HP: " + enemyAttributes.hp + " / " + enemyAttributes.maxHp);
-	$("#enemystamina").text("STA: " + enemyAttributes.stamina + " / " + enemyAttributes.maxStamina);
+	$("#enemystamina").text("STA: " + Math.floor(enemyAttributes.stamina) + " / " + enemyAttributes.maxStamina);
 	
 	
 	
@@ -353,10 +384,9 @@ function decCount() {
 	console.log("dec cnt");
 	if(countDown > 1) {
 		countDown -= 1;
-	} else if(countDown === 1) {
+	} else {
 		countDown = "FIGHT!";
 		$("#countdown").fadeOut();
-	} else {
 		clearInterval(countDownInterval);
 		gameState = GS.Fight;
 	}
@@ -367,6 +397,6 @@ function resize() {
 	ctx.canvas.height = 600;
 }
 
-function updateDOMElements() {
+function updateStamina() {
 	
 }
