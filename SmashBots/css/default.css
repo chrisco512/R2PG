@@ -94,7 +94,7 @@ table
 	color: white;
 	font-family: "Arial";
 	background:url('../images/stamina.png');
-	background-size: 100% 100%;
+	background-size: 0% 100%;
 	background-repeat:no-repeat;
 	text-shadow: 1px 1px 2px #000000;
 }
@@ -106,7 +106,7 @@ table
 	text-align: right;
 	font-family: "Arial";
 	background:url('../images/stamina.png');
-	background-size: 100% 100%;
+	background-size: 0% 100%;
 	background-position: right;
 	background-repeat:no-repeat;
 	text-shadow: 1px 1px 2px #000000;

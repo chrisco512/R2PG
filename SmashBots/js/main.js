@@ -27,7 +27,7 @@ var playerAttributes = {
 	index: 1,
 	maxHp: 100,
 	hp: 100,
-	stamina: 20,
+	stamina: 0,
 	maxStamina: 20,
 	rechargeRate: 1, //recharges x stamina per second
 	moves:	[	"aba",	"abba",	"acbd",	"ddcc"	],
@@ -53,13 +53,15 @@ var playerAttributes = {
 	},
 	animatingStamina: false,
 	rechargeStamina: function() {
-		this.stamina += this.rechargeRate / FPS;
-		if(this.stamina > this.maxStamina)
-			this.stamina = this.maxStamina;
-		if(!this.animatingStamina) {
-			this.animatingStamina = true;
-			pct = Math.floor(playerAttributes.stamina) / playerAttributes.maxStamina * 100;
-			$("#playerstamina").animate({ 'background-size': pct + "%"}, 1000 / FPS, "swing", function() { playerAttributes.animatingStamina = false; });
+		if(!moveExecuting) {
+			this.stamina += this.rechargeRate / FPS;
+			if(this.stamina > this.maxStamina)
+				this.stamina = this.maxStamina;
+			if(!this.animatingStamina) {
+				this.animatingStamina = true;
+				pct = Math.floor(playerAttributes.stamina) / playerAttributes.maxStamina * 100;
+				$("#playerstamina").animate({ 'background-size': pct + "%"}, 1000 / FPS, "swing", function() { playerAttributes.animatingStamina = false; });
+			}
 		}
 	}
 };
@@ -69,7 +71,7 @@ var enemyAttributes = {
 	hp: 100,
 	maxHp: 100,
 	maxStamina: 20,
-	stamina: 20,
+	stamina: 0,
 	rechargeRate: 1, //recharges x stamina per second
 	moves:	[	"aba",	"abba",	"acbd",	"ddcc"	],
 	damage:	[	10,		20,		30,		40		],
@@ -93,13 +95,15 @@ var enemyAttributes = {
 		$("#enemystamina").animate({ 'background-size': pct + "%"}, 250, "swing", function() { enemyAttributes.animatingStamina = false; } );
 	},
 	rechargeStamina: function() {
-		this.stamina += this.rechargeRate / FPS;
-		if(this.stamina > this.maxStamina)
-			this.stamina = this.maxStamina;
-		if(!this.animatingStamina) {
-			this.animatingStamina = true;
-			pct = Math.floor(enemyAttributes.stamina) / enemyAttributes.maxStamina * 100;
-			$("#enemystamina").animate({ 'background-size': pct + "%"}, 1000 / FPS, "swing", function() { enemyAttributes.animatingStamina = false; });
+		if(!moveExecuting) {
+			this.stamina += this.rechargeRate / FPS;
+			if(this.stamina > this.maxStamina)
+				this.stamina = this.maxStamina;
+			if(!this.animatingStamina) {
+				this.animatingStamina = true;
+				pct = Math.floor(enemyAttributes.stamina) / enemyAttributes.maxStamina * 100;
+				$("#enemystamina").animate({ 'background-size': pct + "%"}, 1000 / FPS, "swing", function() { enemyAttributes.animatingStamina = false; });
+			}
 		}
 	}
 };
@@ -117,6 +121,7 @@ var Keys = {
 	DOWN: 40,
 	A: 65,
 	D: 68,
+	Q: 81,
 	ZERO: 48,
 	ONE: 49,
 	TWO: 50,
@@ -143,7 +148,6 @@ function executeMove(move) {
 		return;
 	}
 	moveExecuting = true;
-	//moveIconDown(move.index + 1);
 	updateIcons(move.index + 1);
 	var time = 0;
 	var moveString = move.moveId[move.index];
@@ -356,13 +360,11 @@ function handleComplete() {
 					moveQueue.push(new move(4, 2, player2, enemyAttributes.moves[3], enemyAttributes.damage[3], 0));
 				}
 			}
+			if(e.which == Keys.Q) {
+				playerAttributes.stamina = playerAttributes.maxStamina;
+			}
 		}
 	});
-	
-	// currentMoveIcon = new createjs.Bitmap("images/button_1.jpg");
-	// currentMoveIcon.x = 100;
-	// currentMoveIcon.y = 100;
-	// stage.addChild(currentMoveIcon);
 	
 	stage.update();
 
@@ -537,10 +539,6 @@ function updateIcons(index) {
 	//move the rest of the icons left
 	for(var i = index + 1; i < icons.length; i++)
 		createjs.Tween.get(icons[i]).to({x:(icons[i].x - 43 - 20)}, 100, createjs.Ease.linear);
-}
-
-function moveIconDown(index) {
-	createjs.Tween.get(icons[index]).to({y:600}, 100, createjs.Ease.linear);
 }
 
 function removeMoveDisplay() {
