@@ -38,7 +38,7 @@ var playerAttributes = {
 			this.active = false;
 		}
 		pct = playerAttributes.hp / playerAttributes.maxHp * 100;
-		$("#playerhp").animate({ 'background-size': pct + "%"});
+		$("#playerhp").animate({ 'background-size': pct + "%"}, 100);
 	},
 	takeStamina: function(stamina) {
 		this.stamina -= stamina;
@@ -76,7 +76,7 @@ var enemyAttributes = {
 			this.active = false;
 		}
 		pct = enemyAttributes.hp / enemyAttributes.maxHp * 100;
-		$("#enemyhp").animate({ 'background-size': pct + "%"});
+		$("#enemyhp").animate({ 'background-size': pct + "%"}, 100);
 	},
 	takeStamina: function(stamina) {
 		this.stamina -= stamina;
@@ -115,6 +115,13 @@ var Keys = {
 	NINE: 57
 };
 
+var MoveList = {
+	PUNCH_L: "a",
+	PUNCH_R: "b",
+	KICK_L: "c",
+	KICK_R: "d"
+};
+
 function executeMove(move) {
 	moveExecuting = true;
 	// var self = this;
@@ -123,20 +130,36 @@ function executeMove(move) {
 	var time = 0;
 	var moveString = move.moveId[move.index];
 	switch(moveString) {
-		case "a":
+		case MoveList.PUNCH_L:
 			move.player.gotoAndPlay("punch_l");
+			if(move.playerNumber === 1)
+				enemyAttributes.takeDamage(5);
+			else
+				playerAttributes.takeDamage(5);
 			time = 300;
 			break;
-		case "b":
+		case MoveList.PUNCH_R:
 			move.player.gotoAndPlay("punch_r");
+			if(move.playerNumber === 1)
+				enemyAttributes.takeDamage(5);
+			else
+				playerAttributes.takeDamage(5);
 			time = 300;
 			break;
-		case "c":
+		case MoveList.KICK_L:
 			move.player.gotoAndPlay("kick_l");
+			if(move.playerNumber === 1)
+				enemyAttributes.takeDamage(10);
+			else
+				playerAttributes.takeDamage(10);
 			time = 600;
 			break;
-		case "d":
+		case MoveList.KICK_R:
 			move.player.gotoAndPlay("kick_r");
+			if(move.playerNumber === 1)
+				enemyAttributes.takeDamage(10);
+			else
+				playerAttributes.takeDamage(10);
 			time = 600;
 			break;
 	}
@@ -145,10 +168,6 @@ function executeMove(move) {
 		setTimeout(function() { executeMove(move); }, time);
 	else {
 		moveExecuting = false;
-		if(move.playerNumber === 1)
-			enemyAttributes.takeDamage(move.damage);
-		else
-			playerAttributes.takeDamage(move.damage);
 	}
 }
 
