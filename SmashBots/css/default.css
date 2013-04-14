@@ -15,7 +15,7 @@
     display: block;
 	z-index: -1;
 	background: url("../images/futuristic_background.jpg");
-	background-size:100% 100%;
+	background-size: 100% 100%;
 }
 
 #console {
@@ -38,7 +38,7 @@
 	font-size: 12px;
 	color: white;
 	background:url('../images/playerHp.png');
-	background-size:100% 100%;
+	background-size: 100% 100%;
 	background-repeat:no-repeat;
 }
 #enemyhp {
@@ -48,17 +48,27 @@
 	color: white;
 	text-align: right;
 	background:url('../images/enemyHp.png');
-	background-size:100% 100%;
+	background-size: 100% 100%;
 	background-position: right;
 	background-repeat:no-repeat;
 }
+
+table {
+        width: 100%;
+        padding: 10px;
+        height: 75%;
+        top: 5%;
+        position: absolute;
+        text-align: center;
+    }
+
 #playerstamina {
 	height: 15px;
 	width: 200px;
 	font-size: 12px;
 	color: white;
 	background:url('../images/stamina.png');
-	background-size:100% 100%;
+	background-size: 100% 100%;
 	background-repeat:no-repeat;
 }
 #enemystamina {
@@ -68,7 +78,7 @@
 	color: white;
 	text-align: right;
 	background:url('../images/stamina.png');
-	background-size:100% 100%;
+	background-size: 100% 100%;
 	background-position: right;
 	background-repeat:no-repeat;
 }
