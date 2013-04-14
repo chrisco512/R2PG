@@ -316,48 +316,56 @@ function handleComplete() {
 				if(playerAttributes.stamina >= playerAttributes.cost[0]) {
 					playerAttributes.takeStamina(playerAttributes.cost[0]);
 					moveQueue.push(new move(1, 1, player1, playerAttributes.moves[0], playerAttributes.damage[0], 0));
+					addMoveToConsole();
 				}
 			}
 			else if(e.which == Keys.TWO) {
 				if(playerAttributes.stamina >= playerAttributes.cost[1]) {
 					playerAttributes.takeStamina(playerAttributes.cost[1]);
 					moveQueue.push(new move(2, 1, player1, playerAttributes.moves[1], playerAttributes.damage[1], 0));
+					addMoveToConsole();
 				}
 			}
 			else if(e.which == Keys.THREE) {
 				if(playerAttributes.stamina >= playerAttributes.cost[2]) {
 					playerAttributes.takeStamina(playerAttributes.cost[2]);
 					moveQueue.push(new move(3, 1, player1, playerAttributes.moves[2], playerAttributes.damage[2], 0));
+					addMoveToConsole();
 				}
 			}
 			else if(e.which == Keys.FOUR) {
 				if(playerAttributes.stamina >= playerAttributes.cost[3]) {
 					playerAttributes.takeStamina(playerAttributes.cost[3]);
 					moveQueue.push(new move(4, 1, player1, playerAttributes.moves[3], playerAttributes.damage[3], 0));
+					addMoveToConsole();
 				}
 			}
 			if(e.which == Keys.SEVEN) {
 				if(enemyAttributes.stamina >= enemyAttributes.cost[0]) {
 					enemyAttributes.takeStamina(enemyAttributes.cost[0]);
 					moveQueue.push(new move(1, 2, player2, enemyAttributes.moves[0], enemyAttributes.damage[0], 0));
+					addMoveToConsole();
 				}
 			}
 			else if(e.which == Keys.EIGHT) {
 				if(enemyAttributes.stamina >= enemyAttributes.cost[1]) {
 					enemyAttributes.takeStamina(enemyAttributes.cost[1]);
 					moveQueue.push(new move(2, 2, player2, enemyAttributes.moves[1], enemyAttributes.damage[1], 0));
+					addMoveToConsole();
 				}
 			}
 			else if(e.which == Keys.NINE) {
 				if(enemyAttributes.stamina >= enemyAttributes.cost[2]) {
 					enemyAttributes.takeStamina(enemyAttributes.cost[2]);
 					moveQueue.push(new move(3, 2, player2, enemyAttributes.moves[2], enemyAttributes.damage[2], 0));
+					addMoveToConsole();
 				}
 			}
 			else if(e.which == Keys.ZERO) {
 				if(enemyAttributes.stamina >= enemyAttributes.cost[3]) {
 					enemyAttributes.takeStamina(enemyAttributes.cost[3]);
 					moveQueue.push(new move(4, 2, player2, enemyAttributes.moves[3], enemyAttributes.damage[3], 0));
+					addMoveToConsole();
 				}
 			}
 			if(e.which == Keys.Q) {
@@ -433,8 +441,10 @@ function update() {
 		if(!moveExecuting) {
 			if(moveQueue.length > 0) {
 				currentMove = moveQueue.shift();
+				removeMoveFromConsole();
 				displayMove(currentMove);
 				executeMove(currentMove);
+				
 			}
 		}
 		
