@@ -31,7 +31,8 @@
 #console {
 	height: 600px;
 	width: 100px;
-	background-color: yellow;
+	background-image: url("../images/console.png");
+	background-size: 100% 100%;
 	z-index: -21;
 }
 
