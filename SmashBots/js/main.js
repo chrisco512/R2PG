@@ -545,7 +545,7 @@ function displayMove(move) {
 
 function updateIcons(index) {
 	//move leftmost icon down off of the screen
-	createjs.Tween.get(icons[index]).to({y:600}, 100, createjs.Ease.linear);
+	createjs.Tween.get(icons[index]).to({y:canvas.height}, 100, createjs.Ease.linear);
 	
 	//move the rest of the icons left
 	for(var i = index + 1; i < icons.length; i++)
