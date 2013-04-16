@@ -15,8 +15,8 @@ var enableBlock;
 var punchDamage = 2;
 var kickDamage = 4;
 var previousMoves = [];
-var playerX = canvas.width / 2 - 65;
-var opponentX = canvas.width / 2 + 65;
+// var playerX = canvas.width / 2 - 65;
+// var opponentX = canvas.width / 2 + 65;
 var fallBackCounter;
 
 var GS = {
