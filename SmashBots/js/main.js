@@ -1,5 +1,5 @@
 var canvas, ctx, stage, player1, player2;
-var countDownInterval, aiInterval;
+var countDownInterval, aiInterval, fallBackInterval;
 var countdownElement;
 var playerHpElement, enemyHpElement, playerStaminaElement, enemyStaminaElement, consoleElement, console_rElement;
 var countDown = 3;
@@ -15,6 +15,9 @@ var enableBlock;
 var punchDamage = 2;
 var kickDamage = 4;
 var previousMoves = [];
+var playerX = canvas.width / 2 - 65;
+var opponentX = canvas.width / 2 + 65;
+var fallBackCounter;
 
 var GS = {
 	CountDown: 0,
@@ -147,6 +150,19 @@ var enemyAttributes = {
 
 function executeMove(move) {
 	if(move.index >= move.moveId.length || gameState === GS.End) {
+		// if(move.moveNumber === 4) {
+			// //big move, have character fall back
+			// fallBackCounter = 16;
+			// if(move.playerNumber === 1) {
+				// fallBackInterval = setInterval(fallBackPlayer, 1000 / FPS);
+			// } else {
+				// fallBackInterval = setInterval(fallBackOpponent, 1000 / FPS);
+			// }
+		// } else {
+			// moveExecuting = false;
+			// removeMoveDisplay();
+			// return;
+		// }
 		moveExecuting = false;
 		removeMoveDisplay();
 		return;
@@ -209,6 +225,12 @@ function executeMove(move) {
 	}, time / 3);
 }
 
+function fallBackPlayer() {
+	if(fallBackCounter == 0)
+		return;
+	
+}
+
 function init() {
 	canvas = document.getElementById("canvas");
 	ctx = canvas.getContext("2d");
@@ -244,6 +266,8 @@ function init() {
 	moveExecuting = false;
 	
 	enableBlock = false;
+	
+	fallBackCounter = 0;
 }
 
 function handleFileLoad(o) {
