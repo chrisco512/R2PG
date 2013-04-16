@@ -14,6 +14,7 @@ var icons = [];
 var enableBlock;
 var punchDamage = 2;
 var kickDamage = 4;
+var previousMoves = [];
 
 var GS = {
 	CountDown: 0,
@@ -49,7 +50,7 @@ var MoveList = {
 	KICK_R: "d"
 };
 
-function move(moveNumber, playerNumber, player, moveId, damage, index, blocked) {
+function move(moveNumber, playerNumber, player, moveId, damage, index, blockPercentage) {
 	return {
 		moveNumber: moveNumber,
 		playerNumber: playerNumber,
@@ -57,7 +58,7 @@ function move(moveNumber, playerNumber, player, moveId, damage, index, blocked) 
 		moveId: moveId,
 		damage: damage,
 		index: index,
-		blocked: blocked
+		blockPercentage: blockPercentage
 	};
 }
 
@@ -152,35 +153,36 @@ function executeMove(move) {
 	}
 	moveExecuting = true;
 	updateIcons(move.index + 1);
+	var randomNumber = Math.floor(Math.random()*(99 + 1)); //produces a random number between 0 and 99
 	if(move.playerNumber === 1) {
-		if(move.blocked) {
+		
+		if(randomNumber < move.blockPercentage) {
 			console.log("AI blocked!");
 			enemyAttributes.takeDamage(move.damage / 2);
-			move.blocked = false;
 		}
 		else {
-			console.log("damage = " + move.damage);
 			enemyAttributes.takeDamage(move.damage);
 		}
 	} else {
-		if(move.blocked) {
-			console.log("you blocked!");
+		if(randomNumber < move.blockPercentage) {
+			console.log("You blocked!");
 			playerAttributes.takeDamage(move.damage / 2);
-			move.blocked = false;
+			move.blockPercentage = 0;
 		}
 		else {
-			console.log("damage = " + move.damage);
 			playerAttributes.takeDamage(move.damage);
 		}
 	}
 	var time = 0;
 	switch(move.moveId[move.index]) {
 		case MoveList.PUNCH_L:
+			//createjs.Sound.play("sounds/whir.wav");
 			move.player.gotoAndPlay("punch_l");
 			move.damage = punchDamage;
 			time = 300;
 			break;
 		case MoveList.PUNCH_R:
+			//createjs.Sound.play("sounds/whir.wav");
 			move.player.gotoAndPlay("punch_r");
 			move.damage = punchDamage;
 			time = 300;
@@ -393,7 +395,7 @@ function handleComplete() {
 			}
 			if(e.which == Keys.W) {
 				if(enableBlock) {
-					currentMove.blocked = true;
+					currentMove.blockPercentage = 100; //player blocked the attack
 				}
 			}
 		}
@@ -456,7 +458,6 @@ function removeMoveFromConsole() {
 }
 
 function update() {
-	console.log("Update");
 	
 	if(gameState === GS.Fight) {
 		enableControls = true;
@@ -469,6 +470,12 @@ function update() {
 				currentMove = moveQueue.shift();
 				removeMoveFromConsole();
 				displayMove(currentMove);
+				if(currentMove.playerNumber === 1) {
+					currentMove.blockPercentage = blockPercentageAI(currentMove);
+					previousMoves.push(currentMove);
+					if(previousMoves.length > 3)
+						previousMoves.shift();
+				}
 				executeMove(currentMove);
 			}
 		}
@@ -488,6 +495,7 @@ function update() {
 	}
 	
 	draw();
+	
 }
 
 function draw() {
@@ -528,16 +536,16 @@ function displayMove(move) {
 		x = canvas.width / 2 - (43 + 20) * move.moveId.length / 2 - 43 / 2;
 	switch(move.moveNumber) {
 		case 1:
-			icons[0] = new createjs.Bitmap("images/button_1.jpg");
+			icons[0] = new createjs.Bitmap("images/button_1.png");
 			break;
 		case 2:
-			icons[0] = new createjs.Bitmap("images/button_2.jpg");
+			icons[0] = new createjs.Bitmap("images/button_2.png");
 			break;
 		case 3:
-			icons[0] = new createjs.Bitmap("images/button_3.jpg");
+			icons[0] = new createjs.Bitmap("images/button_3.png");
 			break;
 		case 4:
-			icons[0] = new createjs.Bitmap("images/button_4.jpg");
+			icons[0] = new createjs.Bitmap("images/button_4.png");
 			break;
 	}
 	icons[0].x = x;
@@ -547,16 +555,16 @@ function displayMove(move) {
 	for(var i = 0; i < move.moveId.length; i++) {
 		switch(move.moveId[i]) {
 			case MoveList.PUNCH_L:
-				icons[i+1] = new createjs.Bitmap("images/dummy_icon_1.png");
+				icons[i+1] = new createjs.Bitmap("images/punch_left.png");
 				break;
 			case MoveList.PUNCH_R:
-				icons[i+1] = new createjs.Bitmap("images/dummy_icon_2.png");
+				icons[i+1] = new createjs.Bitmap("images/punch_right.png");
 				break;
 			case MoveList.KICK_L:
-				icons[i+1] = new createjs.Bitmap("images/dummy_icon_3.png");
+				icons[i+1] = new createjs.Bitmap("images/kick_left.png");
 				break;
 			case MoveList.KICK_R:
-				icons[i+1] = new createjs.Bitmap("images/dummy_icon_4.png");
+				icons[i+1] = new createjs.Bitmap("images/kick_right.png");
 				break;
 		}
 		icons[i+1].x = x;
@@ -601,4 +609,13 @@ function pickMoveAI() {
 		addMoveToConsole(move_number + 4);
 	}
 	
+}
+
+function blockPercentageAI(move) {
+	var previousTimes = 0;
+	for(var i = 0; i < previousMoves.length; i++) {
+		if(previousMoves[i] == move)
+			previousTimes++;
+	}
+	return (20 + previousTimes * 10);
 }
