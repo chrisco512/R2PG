@@ -2,10 +2,25 @@
 
 var p; // shortcut to reference prototypes
 
+var cstImg;
+
 // stage content:
-(lib.robot_frame = function(mode,startPosition,loop) {
+(lib.robot_frame = function(mode,startPosition,loop, cstImages) {
 	this.initialize(mode,startPosition,loop,{idle:0,punch_r:15,punch_l:22,kick_r:29,kick_l:40,block_upper:51,block_lower:58,kick_flip:69,takehit_upper:79,takehit_lower:86,headbutt:97,falldown:104},true);
 
+	cstImg = cstImages || {
+		arm: img["arm"],
+		fist_l: img.fist_l,
+		fist_r: img.fist_r,
+		foot: img.foot,
+		forearm: img.forearm,
+		head: img.head,
+		leg: img.leg,
+		pelvis: img.pelvis,
+		shin: img.shin,
+		torso: img.torso
+	};
+	
 	// timeline functions:
 	this.frame_14 = function() {
 		this.gotoAndPlay("idle");
@@ -707,64 +722,63 @@ var p; // shortcut to reference prototypes
 }).prototype = p = new cjs.MovieClip();
 p.nominalBounds = new cjs.Rectangle(192.5,26.8,152,434.2);
 
-
 // symbols:
 (lib.arm = function() {
-	this.initialize(img.arm);
+	this.initialize(cstImg.arm);
 }).prototype = new cjs.Bitmap();
 p.nominalBounds = new cjs.Rectangle(0,0,25,60);
 
 
 (lib.fist_l = function() {
-	this.initialize(img.fist_l);
+	this.initialize(cstImg.fist_l);
 }).prototype = new cjs.Bitmap();
 p.nominalBounds = new cjs.Rectangle(0,0,24,32);
 
 
 (lib.fist_r = function() {
-	this.initialize(img.fist_r);
+	this.initialize(cstImg.fist_r);
 }).prototype = new cjs.Bitmap();
 p.nominalBounds = new cjs.Rectangle(0,0,24,32);
 
 
 (lib.foot = function() {
-	this.initialize(img.foot);
+	this.initialize(cstImg.foot);
 }).prototype = new cjs.Bitmap();
 p.nominalBounds = new cjs.Rectangle(0,0,45,20);
 
 
 (lib.forearm = function() {
-	this.initialize(img.forearm);
+	this.initialize(cstImg.forearm);
 }).prototype = new cjs.Bitmap();
 p.nominalBounds = new cjs.Rectangle(0,0,20,60);
 
 
 (lib.head = function() {
-	this.initialize(img.head);
+	this.initialize(cstImg.head);
 }).prototype = new cjs.Bitmap();
 p.nominalBounds = new cjs.Rectangle(0,0,64,64);
 
 
 (lib.leg = function() {
-	this.initialize(img.leg);
+	this.initialize(cstImg.leg);
 }).prototype = new cjs.Bitmap();
 p.nominalBounds = new cjs.Rectangle(0,0,30,100);
 
 
 (lib.pelvis = function() {
-	this.initialize(img.pelvis);
+	this.initialize(cstImg.pelvis);
 }).prototype = new cjs.Bitmap();
 p.nominalBounds = new cjs.Rectangle(0,0,32,32);
 
 
 (lib.shin = function() {
-	this.initialize(img.shin);
+	this.initialize(cstImg.shin);
 }).prototype = new cjs.Bitmap();
 p.nominalBounds = new cjs.Rectangle(0,0,16,100);
 
 
 (lib.torso = function() {
-	this.initialize(img.torso);
+	this.initialize(cstImg.torso);
 }).prototype = new cjs.Bitmap();
 p.nominalBounds = new cjs.Rectangle(0,0,50,100);
 
@@ -843,7 +857,7 @@ p.nominalBounds = new cjs.Rectangle(-0.9,-12,64,64);
 
 (lib.hand = function() {
 	this.initialize();
-
+	
 	// Layer 1
 	this.instance_5 = new lib.fist_l();
 	this.instance_5.setTransform(23.8,8.2,1.001,1,0,105,103.1);
@@ -855,7 +869,8 @@ p.nominalBounds = new cjs.Rectangle(-12.5,0,36.4,31.7);
 
 (lib.ghost = function() {
 	this.initialize();
-
+	this.type = "lib.ghost";
+	
 	// Layer 1
 	this.shape_1 = new cjs.Shape();
 	this.shape_1.graphics.f("#000000").s().p("AiQiQQg8A8AABUQAABVA8A8QA8A8BUAAQBVAAA8g8QA8g8AAhVQAAhUg8g8Qg8g8hVAAQhUAAg8A8IAAAA").cp();

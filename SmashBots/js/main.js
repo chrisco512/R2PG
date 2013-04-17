@@ -19,6 +19,8 @@ var previousMoves = [];
 // var opponentX = canvas.width / 2 + 65;
 var fallBackCounter;
 
+
+
 var GS = {
 	CountDown: 0,
 	Fight: 1,
@@ -249,7 +251,8 @@ function init() {
 		{src:"images/leg.png", id:"leg"},
 		{src:"images/pelvis.png", id:"pelvis"},
 		{src:"images/shin.png", id:"shin"},
-		{src:"images/torso.png", id:"torso"}
+		{src:"images/torso.png", id:"torso"},
+		{src:"images/head2.png", id:"head2"}
 	];
 
 	var loader = new createjs.PreloadJS(false);
