@@ -14,10 +14,12 @@ var icons = [];
 var enableBlock;
 var punchDamage = 2;
 var kickDamage = 4;
+var specialDamage = 8;
 var previousMoves = [];
 // var playerX = canvas.width / 2 - 65;
 // var opponentX = canvas.width / 2 + 65;
 var fallBackCounter;
+var maxNGrams = 10;
 
 var GS = {
 	CountDown: 0,
@@ -50,7 +52,9 @@ var MoveList = {
 	PUNCH_L: "a",
 	PUNCH_R: "b",
 	KICK_L: "c",
-	KICK_R: "d"
+	KICK_R: "d",
+	FLIP_KICK: "e",
+	HEADBUTT: "f"
 };
 
 function move(moveNumber, playerNumber, player, moveId, damage, index, blockPercentage) {
@@ -72,7 +76,7 @@ var playerAttributes = {
 	stamina: 0,
 	maxStamina: 20,
 	rechargeRate: 1, //recharges x stamina per second
-	moves:	[	"aba",	"abba",	"acbd",	"ddcc"	],
+	moves:	[	MoveList.PUNCH_L + MoveList.PUNCH_R + MoveList.PUNCH_L,	"abba",	"acbd",	"ddcc"	],
 	cost:	[	1,		3,		5,		7		],
 	active: true,
 	takeDamage: function(damage) {
@@ -169,24 +173,46 @@ function executeMove(move) {
 	}
 	moveExecuting = true;
 	updateIcons(move.index + 1);
-	var randomNumber = Math.floor(Math.random()*(99 + 1)); //produces a random number between 0 and 99
-	if(move.playerNumber === 1) {
-		
-		if(randomNumber < move.blockPercentage) {
-			console.log("AI blocked!");
-			enemyAttributes.takeDamage(move.damage / 2);
-		}
-		else {
-			enemyAttributes.takeDamage(move.damage);
-		}
-	} else {
-		if(randomNumber < move.blockPercentage) {
-			console.log("You blocked!");
-			playerAttributes.takeDamage(move.damage / 2);
-			move.blockPercentage = 0;
-		}
-		else {
-			playerAttributes.takeDamage(move.damage);
+	if(move.index > 0) {
+		var randomNumber = Math.floor(Math.random()*(99 + 1)); //produces a random number between 0 and 99
+		if(move.playerNumber === 1) {
+			
+			if(randomNumber < move.blockPercentage) {
+				console.log("AI blocked!");
+				if(move.moveId[move.index-1] === MoveList.PUNCH_L || move.moveId[move.index-1] === MoveList.PUNCH_R) {
+					player2.gotoAndPlay("block_upper");
+				} else {
+					player2.gotoAndPlay("block_lower");
+				}
+				enemyAttributes.takeDamage(move.damage / 2);
+			}
+			else {
+				if(move.moveId[move.index-1] === MoveList.PUNCH_L || move.moveId[move.index-1] === MoveList.PUNCH_R) {
+					player2.gotoAndPlay("takehit_upper");
+				} else {
+					player2.gotoAndPlay("takehit_lower");
+				}
+				enemyAttributes.takeDamage(move.damage);
+			}
+		} else {
+			if(randomNumber < move.blockPercentage) {
+				console.log("You blocked!");
+				if(move.moveId[move.index-1] === MoveList.PUNCH_L || move.moveId[move.index-1] === MoveList.PUNCH_R) {
+					player1.gotoAndPlay("block_upper");
+				} else {
+					player1.gotoAndPlay("block_lower");
+				}
+				playerAttributes.takeDamage(move.damage / 2);
+				move.blockPercentage = 0;
+			}
+			else {
+				if(move.moveId[move.index-1] === MoveList.PUNCH_L || move.moveId[move.index-1] === MoveList.PUNCH_R) {
+					player2.gotoAndPlay("takehit_upper");
+				} else {
+					player2.gotoAndPlay("takehit_lower");
+				}
+				playerAttributes.takeDamage(move.damage);
+			}
 		}
 	}
 	var time = 0;
@@ -213,6 +239,14 @@ function executeMove(move) {
 			move.damage = kickDamage;
 			time = 600;
 			break;
+		case MoveList.FLIP_KICK:
+			move.player.gotoAndPlay("flip_kick");
+			move.damage = specialDamage;
+			time = 600;
+		case MoveList.HEADBUTT:
+			move.player.gotoAndPlay("headbutt");
+			move.damage = specialDamage;
+			time = 300;
 	}
 	move.index++;
 	setTimeout(function() { executeMove(move); }, time);
@@ -497,7 +531,7 @@ function update() {
 				if(currentMove.playerNumber === 1) {
 					currentMove.blockPercentage = blockPercentageAI(currentMove);
 					previousMoves.push(currentMove);
-					if(previousMoves.length > 3)
+					if(previousMoves.length > maxNGrams)
 						previousMoves.shift();
 				}
 				executeMove(currentMove);
@@ -641,5 +675,5 @@ function blockPercentageAI(move) {
 		if(previousMoves[i] == move)
 			previousTimes++;
 	}
-	return (20 + previousTimes * 10);
+	return (10 + previousTimes * 10);
 }
