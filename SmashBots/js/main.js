@@ -49,12 +49,12 @@ var Keys = {
 };
 
 var MoveList = {
-	PUNCH_L: { id: "a", damage: 2, stamina: 1, animation: "punch_l", time: 300 },
-	PUNCH_R: { id: "b", damage: 2, stamina: 1, animation: "punch_r", time: 300 },
-	KICK_L: { id: "c", damage: 4, stamina: 2, animation: "kick_l", time: 600 },
-	KICK_R: { id: "d", damage: 4, stamina: 2, animation: "kick_r", time: 600 },
-	KICK_FLIP: { id: "e", damage: 8, stamina: 4, animation: "kick_flip", time: 600 },
-	HEADBUTT: { id: "f", damage: 8, stamina: 4, animation: "headbutt", time: 600 }
+	PUNCH_L: { id: "p", damage: 2, stamina: 1, animation: "punch_l", time: 300 },
+	PUNCH_R: { id: "P", damage: 2, stamina: 1, animation: "punch_r", time: 300 },
+	KICK_L: { id: "k", damage: 4, stamina: 2, animation: "kick_l", time: 600 },
+	KICK_R: { id: "K", damage: 4, stamina: 2, animation: "kick_r", time: 600 },
+	KICK_FLIP: { id: "f", damage: 8, stamina: 4, animation: "kick_flip", time: 600 },
+	HEADBUTT: { id: "h", damage: 8, stamina: 4, animation: "headbutt", time: 600 }
 };
 
 function move(moveNumber, playerNumber, player, moveId, damage, index, blockPercentage) {
