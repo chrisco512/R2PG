@@ -2,7 +2,7 @@ var canvas, ctx, stage, player1, player2;
 var countDownInterval, aiInterval, fallBackInterval;
 var countdownElement;
 var playerHpElement, enemyHpElement, playerStaminaElement, enemyStaminaElement, consoleElement, console_rElement;
-var countDown = 3;
+var countDown;
 var gameState;
 var enableControls;
 var moveExecuting;
@@ -12,12 +12,12 @@ var pct;
 var currentMove, currentMoveIcon;
 var icons = [];
 var enableBlock;
-var punchDamage = 2;
-var kickDamage = 4;
+var blockPenalty;
 var previousMoves = [];
 // var playerX = canvas.width / 2 - 65;
 // var opponentX = canvas.width / 2 + 65;
 var fallBackCounter;
+var maxNGrams = 8;
 
 
 
@@ -49,10 +49,12 @@ var Keys = {
 };
 
 var MoveList = {
-	PUNCH_L: "a",
-	PUNCH_R: "b",
-	KICK_L: "c",
-	KICK_R: "d"
+	PUNCH_L: { id: "a", damage: 2, stamina: 1, animation: "punch_l", time: 300 },
+	PUNCH_R: { id: "b", damage: 2, stamina: 1, animation: "punch_r", time: 300 },
+	KICK_L: { id: "c", damage: 4, stamina: 2, animation: "kick_l", time: 600 },
+	KICK_R: { id: "d", damage: 4, stamina: 2, animation: "kick_r", time: 600 },
+	KICK_FLIP: { id: "e", damage: 8, stamina: 4, animation: "kick_flip", time: 600 },
+	HEADBUTT: { id: "f", damage: 8, stamina: 4, animation: "headbutt", time: 600 }
 };
 
 function move(moveNumber, playerNumber, player, moveId, damage, index, blockPercentage) {
@@ -68,14 +70,21 @@ function move(moveNumber, playerNumber, player, moveId, damage, index, blockPerc
 }
 
 var playerAttributes = {
-	index: 1,
 	maxHp: 100,
 	hp: 100,
-	stamina: 0,
 	maxStamina: 20,
+	stamina: 20 / 2,
 	rechargeRate: 1, //recharges x stamina per second
-	moves:	[	"aba",	"abba",	"acbd",	"ddcc"	],
-	cost:	[	1,		3,		5,		7		],
+	moves:	[	MoveList.PUNCH_L.id + MoveList.PUNCH_R.id,
+				MoveList.HEADBUTT.id,
+				MoveList.PUNCH_L.id + MoveList.KICK_R.id + MoveList.PUNCH_R.id + MoveList.KICK_L.id,
+				MoveList.KICK_L.id + MoveList.KICK_R.id + MoveList.KICK_FLIP.id	],
+	cost: function(moveNumber) {
+		var sum = 0;
+		for(var i = 0; i < this.moves[moveNumber].length; i++)
+			sum += moveCost(this.moves[moveNumber][i]);
+		return sum;
+	},
 	active: true,
 	takeDamage: function(damage) {
 		this.hp -= damage;
@@ -110,14 +119,21 @@ var playerAttributes = {
 };
 
 var enemyAttributes = {
-	index: 2,
-	hp: 100,
 	maxHp: 100,
+	hp: 100,
 	maxStamina: 20,
-	stamina: 0,
+	stamina: 20 / 2,
 	rechargeRate: 1, //recharges x stamina per second
-	moves:	[	"aba",	"abba",	"acbd",	"ddcc"	],
-	cost:	[	1,		3,		5,		7		],
+	moves:	[	MoveList.PUNCH_L.id + MoveList.PUNCH_R.id,
+				MoveList.HEADBUTT.id,
+				MoveList.PUNCH_L.id + MoveList.KICK_R.id + MoveList.PUNCH_R.id + MoveList.KICK_L.id,
+				MoveList.KICK_L.id + MoveList.KICK_R.id + MoveList.KICK_FLIP.id	],
+	cost: function(moveNumber) {
+		var sum = 0;
+		for(var i = 0; i < this.moves[moveNumber].length; i++)
+			sum += moveCost(this.moves[moveNumber][i]);
+		return sum;
+	},
 	active: true,
 	takeDamage: function(damage) {
 		this.hp -= damage;
@@ -151,7 +167,7 @@ var enemyAttributes = {
 };
 
 function executeMove(move) {
-	if(move.index >= move.moveId.length || gameState === GS.End) {
+	if(move.index > move.moveId.length || gameState === GS.End) {
 		// if(move.moveNumber === 4) {
 			// //big move, have character fall back
 			// fallBackCounter = 16;
@@ -169,51 +185,50 @@ function executeMove(move) {
 		removeMoveDisplay();
 		return;
 	}
+	
 	moveExecuting = true;
-	updateIcons(move.index + 1);
-	var randomNumber = Math.floor(Math.random()*(99 + 1)); //produces a random number between 0 and 99
-	if(move.playerNumber === 1) {
-		
-		if(randomNumber < move.blockPercentage) {
-			console.log("AI blocked!");
-			enemyAttributes.takeDamage(move.damage / 2);
-		}
-		else {
-			enemyAttributes.takeDamage(move.damage);
-		}
-	} else {
-		if(randomNumber < move.blockPercentage) {
-			console.log("You blocked!");
-			playerAttributes.takeDamage(move.damage / 2);
-			move.blockPercentage = 0;
-		}
-		else {
-			playerAttributes.takeDamage(move.damage);
-		}
+	
+	if(move.index === move.moveId.length) {
+		moveExecuting = false;
+		removeMoveDisplay();
+		return;
 	}
+	
+	updateIcons(move.index + 1);
+	
 	var time = 0;
 	switch(move.moveId[move.index]) {
-		case MoveList.PUNCH_L:
+		case MoveList.PUNCH_L.id:
 			//createjs.Sound.play("sounds/whir.wav");
-			move.player.gotoAndPlay("punch_l");
-			move.damage = punchDamage;
-			time = 300;
+			move.player.gotoAndPlay(MoveList.PUNCH_L.animation);
+			move.damage = MoveList.PUNCH_L.damage;
+			time = MoveList.PUNCH_L.time;
 			break;
-		case MoveList.PUNCH_R:
+		case MoveList.PUNCH_R.id:
 			//createjs.Sound.play("sounds/whir.wav");
-			move.player.gotoAndPlay("punch_r");
-			move.damage = punchDamage;
-			time = 300;
+			move.player.gotoAndPlay(MoveList.PUNCH_R.animation);
+			move.damage = MoveList.PUNCH_R.damage;
+			time = MoveList.PUNCH_R.time;
 			break;
-		case MoveList.KICK_L:
-			move.player.gotoAndPlay("kick_l");
-			move.damage = kickDamage;
-			time = 600;
+		case MoveList.KICK_L.id:
+			move.player.gotoAndPlay(MoveList.KICK_L.animation);
+			move.damage = MoveList.KICK_L.damage;
+			time = MoveList.KICK_L.time;
 			break;
-		case MoveList.KICK_R:
-			move.player.gotoAndPlay("kick_r");
-			move.damage = kickDamage;
-			time = 600;
+		case MoveList.KICK_R.id:
+			move.player.gotoAndPlay(MoveList.KICK_R.animation);
+			move.damage = MoveList.KICK_R.damage;
+			time = MoveList.KICK_R.time;
+			break;
+		case MoveList.KICK_FLIP.id:
+			move.player.gotoAndPlay(MoveList.KICK_FLIP.animation);
+			move.damage = MoveList.KICK_FLIP.damage;
+			time = MoveList.KICK_FLIP.time;
+			break;
+		case MoveList.HEADBUTT.id:
+			move.player.gotoAndPlay(MoveList.HEADBUTT.animation);
+			move.damage = MoveList.HEADBUTT.damage;
+			time = MoveList.HEADBUTT.time;
 			break;
 	}
 	move.index++;
@@ -222,8 +237,63 @@ function executeMove(move) {
 	//enable blocking
 	//the player can block for the middle third of the total animation time
 	setTimeout(function() {
+		//after 1/3 of the animation time, start the block period
+		
 		enableBlock = true;
-		setTimeout(function() { enableBlock = false; }, time / 3);
+		
+		setTimeout(function() {
+			//the block period is over, so play either the 'hit' or 'block' animation and take damage
+			
+			enableBlock = false;
+			
+			if(move.index > 0) {
+				var randomNumber = Math.floor(Math.random()*(99 + 1)); //produces a random number between 0 and 99
+				if(move.playerNumber === 1) {
+					if(randomNumber < move.blockPercentage) {
+						console.log("AI blocked!");
+						createjs.Sound.play("sounds/swords_collide.mp3");
+						if(move.moveId[move.index-1] === MoveList.PUNCH_L.id || move.moveId[move.index-1] === MoveList.PUNCH_R.id || move.moveId[move.index-1] === MoveList.HEADBUTT.id) {
+							player2.gotoAndPlay("block_upper");
+						} else {
+							player2.gotoAndPlay("block_lower");
+						}
+						enemyAttributes.takeDamage(move.damage / 2);
+					}
+					else {
+						if(move.moveId[move.index-1] === MoveList.PUNCH_L.id || move.moveId[move.index-1] === MoveList.PUNCH_R.id || move.moveId[move.index-1] === MoveList.HEADBUTT.id) {
+							player2.gotoAndPlay("takehit_upper");
+						} else {
+							player2.gotoAndPlay("takehit_lower");
+						}
+						enemyAttributes.takeDamage(move.damage);
+					}
+				} else {
+					if(randomNumber < move.blockPercentage) {
+						console.log("You blocked!");
+						createjs.Sound.play("sounds/swords_collide.mp3");
+						if(move.moveId[move.index-1] === MoveList.PUNCH_L.id || move.moveId[move.index-1] === MoveList.PUNCH_R.id || move.moveId[move.index-1] === MoveList.HEADBUTT.id) {
+							player1.gotoAndPlay("block_upper");
+						} else {
+							player1.gotoAndPlay("block_lower");
+						}
+						playerAttributes.takeDamage(move.damage / 2);
+						move.blockPercentage = 0;
+					}
+					else {
+						if(move.moveId[move.index-1] === MoveList.PUNCH_L.id || move.moveId[move.index-1] === MoveList.PUNCH_R.id || move.moveId[move.index-1] === MoveList.HEADBUTT.id) {
+							player1.gotoAndPlay("takehit_upper");
+						} else {
+							player1.gotoAndPlay("takehit_lower");
+						}
+						playerAttributes.takeDamage(move.damage);
+					}
+				}
+				
+				blockPenalty = false;
+				
+			}
+			
+		}, time / 3);
 	}, time / 3);
 }
 
@@ -265,12 +335,15 @@ function init() {
 	countDownInterval = setInterval(decCount, 1000);
 	
 	enableControls = false;
-	
 	moveExecuting = false;
-	
 	enableBlock = false;
+	blockPenalty = false;
 	
 	fallBackCounter = 0;
+	
+	countDown = 3;
+	
+	currentMove = move(1, 1, player1, "a", 0, 0, 0);
 }
 
 function handleFileLoad(o) {
@@ -362,57 +435,58 @@ function handleComplete() {
 		if(enableControls) {
 			console.log(e.which);
 			if(e.which == Keys.ONE) {
-				if(playerAttributes.stamina >= playerAttributes.cost[0]) {
-					playerAttributes.takeStamina(playerAttributes.cost[0]);
+				console.log(playerAttributes.cost(0));
+				if(playerAttributes.stamina >= playerAttributes.cost(0)) {
+					playerAttributes.takeStamina(playerAttributes.cost(0));
 					moveQueue.push(new move(1, 1, player1, playerAttributes.moves[0], 0, 0, false));
 					addMoveToConsole(1);
 				}
 			}
 			else if(e.which == Keys.TWO) {
-				if(playerAttributes.stamina >= playerAttributes.cost[1]) {
-					playerAttributes.takeStamina(playerAttributes.cost[1]);
+				if(playerAttributes.stamina >= playerAttributes.cost(1)) {
+					playerAttributes.takeStamina(playerAttributes.cost(1));
 					moveQueue.push(new move(2, 1, player1, playerAttributes.moves[1], 0, 0, false));
 					addMoveToConsole(2);
 				}
 			}
 			else if(e.which == Keys.THREE) {
-				if(playerAttributes.stamina >= playerAttributes.cost[2]) {
-					playerAttributes.takeStamina(playerAttributes.cost[2]);
+				if(playerAttributes.stamina >= playerAttributes.cost(2)) {
+					playerAttributes.takeStamina(playerAttributes.cost(2));
 					moveQueue.push(new move(3, 1, player1, playerAttributes.moves[2], 0, 0, false));
 					addMoveToConsole(3);
 				}
 			}
 			else if(e.which == Keys.FOUR) {
-				if(playerAttributes.stamina >= playerAttributes.cost[3]) {
-					playerAttributes.takeStamina(playerAttributes.cost[3]);
+				if(playerAttributes.stamina >= playerAttributes.cost(3)) {
+					playerAttributes.takeStamina(playerAttributes.cost(3));
 					moveQueue.push(new move(4, 1, player1, playerAttributes.moves[3], 0, 0, false));
 					addMoveToConsole(4);
 				}
 			}
 			if(e.which == Keys.SEVEN) {
-				if(enemyAttributes.stamina >= enemyAttributes.cost[0]) {
-					enemyAttributes.takeStamina(enemyAttributes.cost[0]);
+				if(enemyAttributes.stamina >= enemyAttributes.cost(0)) {
+					enemyAttributes.takeStamina(enemyAttributes.cost(0));
 					moveQueue.push(new move(1, 2, player2, enemyAttributes.moves[0], 0, 0, false));
 					addMoveToConsole(5);
 				}
 			}
 			else if(e.which == Keys.EIGHT) {
-				if(enemyAttributes.stamina >= enemyAttributes.cost[1]) {
-					enemyAttributes.takeStamina(enemyAttributes.cost[1]);
+				if(enemyAttributes.stamina >= enemyAttributes.cost(1)) {
+					enemyAttributes.takeStamina(enemyAttributes.cost(1));
 					moveQueue.push(new move(2, 2, player2, enemyAttributes.moves[1], 0, 0, false));
 					addMoveToConsole(6);
 				}
 			}
 			else if(e.which == Keys.NINE) {
-				if(enemyAttributes.stamina >= enemyAttributes.cost[2]) {
-					enemyAttributes.takeStamina(enemyAttributes.cost[2]);
+				if(enemyAttributes.stamina >= enemyAttributes.cost(2)) {
+					enemyAttributes.takeStamina(enemyAttributes.cost(2));
 					moveQueue.push(new move(3, 2, player2, enemyAttributes.moves[2], 0, 0, false));
 					addMoveToConsole(7);
 				}
 			}
 			else if(e.which == Keys.ZERO) {
-				if(enemyAttributes.stamina >= enemyAttributes.cost[3]) {
-					enemyAttributes.takeStamina(enemyAttributes.cost[3]);
+				if(enemyAttributes.stamina >= enemyAttributes.cost(3)) {
+					enemyAttributes.takeStamina(enemyAttributes.cost(3));
 					moveQueue.push(new move(4, 2, player2, enemyAttributes.moves[3], 0, 0, false));
 					addMoveToConsole(8);
 				}
@@ -421,9 +495,14 @@ function handleComplete() {
 				playerAttributes.stamina = playerAttributes.maxStamina;
 			}
 			if(e.which == Keys.W) {
-				if(enableBlock) {
-					currentMove.blockPercentage = 100; //player blocked the attack
+				if(moveExecuting && !blockPenalty) {
+					if(enableBlock) {
+						currentMove.blockPercentage = 100; //player blocked the attack
+					} else {
+						blockPenalty = true;
+					}
 				}
+				
 			}
 		}
 	});
@@ -500,7 +579,7 @@ function update() {
 				if(currentMove.playerNumber === 1) {
 					currentMove.blockPercentage = blockPercentageAI(currentMove);
 					previousMoves.push(currentMove);
-					if(previousMoves.length > 3)
+					if(previousMoves.length > maxNGrams)
 						previousMoves.shift();
 				}
 				executeMove(currentMove);
@@ -508,8 +587,12 @@ function update() {
 		}
 		
 		if(!playerAttributes.active || !enemyAttributes.active) {
-			clearInterval(aiInterval);
 			gameState = GS.End;
+			clearInterval(aiInterval);
+			if(!playerAttributes.active)
+				player1.gotoAndPlay("falldown");
+			else
+				player2.gotoAndPlay("falldown");
 		}
 		
 	} else if(gameState === GS.End) {
@@ -581,17 +664,23 @@ function displayMove(move) {
 	x += 43 + 20;
 	for(var i = 0; i < move.moveId.length; i++) {
 		switch(move.moveId[i]) {
-			case MoveList.PUNCH_L:
+			case MoveList.PUNCH_L.id:
 				icons[i+1] = new createjs.Bitmap("images/punch_left.png");
 				break;
-			case MoveList.PUNCH_R:
+			case MoveList.PUNCH_R.id:
 				icons[i+1] = new createjs.Bitmap("images/punch_right.png");
 				break;
-			case MoveList.KICK_L:
+			case MoveList.KICK_L.id:
 				icons[i+1] = new createjs.Bitmap("images/kick_left.png");
 				break;
-			case MoveList.KICK_R:
+			case MoveList.KICK_R.id:
 				icons[i+1] = new createjs.Bitmap("images/kick_right.png");
+				break;
+			case MoveList.KICK_FLIP.id:
+				icons[i+1] = new createjs.Bitmap("images/kick_left.png");
+				break;
+			case MoveList.HEADBUTT.id:
+				icons[i+1] = new createjs.Bitmap("images/head.png");
 				break;
 		}
 		icons[i+1].x = x;
@@ -619,21 +708,31 @@ function removeMoveDisplay() {
 
 function pickMoveAI() {
 	
-	var move_number = 1;
+	var probability = [];	//probability[i] means the probability of doing move number i
+							//sum of probability is 100%
 	if(playerAttributes.hp / playerAttributes.maxHp >= 0.70) {
-		move_number = 4;
+		probability = [ 10, 20, 20, 50 ]; //very healthy
 	} else if(playerAttributes.hp / playerAttributes.maxHp >= 0.40) {
-		move_number = 3;
+		probability = [ 15, 15, 40, 30 ]; //healthy
 	} else if(playerAttributes.hp / playerAttributes.maxHp >= 0.10) {
-		move_number = 2;
+		probability = [ 25, 35, 25, 15 ]; //not healthy
 	} else {
-		move_number = 1;
+		probability = [ 70, 15, 10, 5 ]; //almost dead
 	}
 	
-	if(enemyAttributes.stamina >= enemyAttributes.cost[move_number-1]) {
-		enemyAttributes.takeStamina(enemyAttributes.cost[move_number-1]);
-		moveQueue.push(new move(move_number, 2, player2, enemyAttributes.moves[move_number-1], 0, 0));
-		addMoveToConsole(move_number + 4);
+	var moveNumber = 1;
+	var randomNumber = Math.floor(Math.random()*(99 + 1)); //produces a random number between 0 and 99
+	for(var i = 0; i < probability.length; i++) {
+		if(randomNumber <= probability[i])
+			moveNumber = i + 1;
+		else
+			randomNumber -= probability[i];
+	}
+	
+	if(enemyAttributes.stamina >= enemyAttributes.cost(moveNumber-1)) {
+		enemyAttributes.takeStamina(enemyAttributes.cost(moveNumber-1));
+		moveQueue.push(new move(moveNumber, 2, player2, enemyAttributes.moves[moveNumber-1], 0, 0));
+		addMoveToConsole(moveNumber + 4);
 	}
 	
 }
@@ -645,4 +744,21 @@ function blockPercentageAI(move) {
 			previousTimes++;
 	}
 	return (20 + previousTimes * 10);
+}
+
+function moveCost(ID) {
+	switch(ID) {
+		case MoveList.PUNCH_L.id:
+			return MoveList.PUNCH_L.stamina;
+		case MoveList.PUNCH_R.id:
+			return MoveList.PUNCH_R.stamina;
+		case MoveList.KICK_L.id:
+			return MoveList.KICK_L.stamina;
+		case MoveList.KICK_R.id:
+			return MoveList.KICK_R.stamina;
+		case MoveList.KICK_FLIP.id:
+			return MoveList.KICK_FLIP.stamina;
+		case MoveList.HEADBUTT.id:
+			return MoveList.HEADBUTT.stamina;
+	}
 }
