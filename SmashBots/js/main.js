@@ -17,7 +17,7 @@ var previousMoves = [];
 // var playerX = canvas.width / 2 - 65;
 // var opponentX = canvas.width / 2 + 65;
 var fallBackCounter;
-var maxNGrams = 8;
+var maxNGrams = 3;
 var icon_width = 50;
 var TWO_PLAYER = false;
 
@@ -25,7 +25,8 @@ var TWO_PLAYER = false;
 var GS = {
 	CountDown: 0,
 	Fight: 1,
-	End: 2
+	GameOver: 2,
+	End: 3
 };
 
 var Keys = {
@@ -168,9 +169,19 @@ var enemyAttributes = {
 	}
 };
 
+function buttonPressed(number) {
+	if(enableControls) {
+		if(playerAttributes.stamina >= playerAttributes.cost(number-1)) {
+			playerAttributes.takeStamina(playerAttributes.cost(number-1));
+			moveQueue.push(new move(number, 1, player1, playerAttributes.moves[number-1], 0, 0, 0));
+			addMoveToConsole(number);
+		}
+	}
+}
+
 function executeMove(move) {
 	console.log(move.blockPercentage);
-	if(move.index > move.moveId.length || gameState === GS.End) {
+	if(move.index > move.moveId.length || gameState !== GS.Fight) {
 		// if(move.moveNumber === 4) {
 			// //big move, have character fall back
 			// fallBackCounter = 16;
@@ -354,6 +365,16 @@ function handleFileLoad(o) {
 }
 
 function handleComplete() {
+	
+	$console = $("#console").get(0);
+	$console_r = $("#console_r").get(0);
+	var container = document.getElementById("container");
+	
+	container.removeChild(canvas);
+	container.appendChild($console);
+	container.appendChild($console_r);
+	container.appendChild(canvas);
+	
 	player1 = new lib.robot_frame();
 	player2 = new lib.robot_frame();
 
@@ -381,7 +402,6 @@ function handleComplete() {
 	countdownElement.y = canvas.height / 2;
 	stage.addChild(countdownElement);
 	
-	$console = $("#console").get(0);
 	consoleElement = new createjs.DOMElement($console);
 	consoleElement.regX = $($console).width();
 	consoleElement.regY = 0;
@@ -389,7 +409,6 @@ function handleComplete() {
 	consoleElement.y = 0;
 	stage.addChild(consoleElement);
 	
-	$console_r = $("#console_r").get(0);
 	console_rElement = new createjs.DOMElement($console_r);
 	console_rElement.regX = 0;
 	console_rElement.regY = 0;
@@ -428,6 +447,14 @@ function handleComplete() {
 	enemyStaminaElement.x = ($($playerhp.parentElement).width() - canvas.width) / 2 + canvas.width - 10;
 	enemyStaminaElement.y = 10 + $($enemyhp).height();
 	stage.addChild(enemyStaminaElement);
+	
+	// $end_screen = $("#end_screen").get(0);
+	// endscreenElement = new createjs.DOMElement($end_screen);
+	// endscreenElement.regX = $($end_screen).width() / 2;
+	// endscreenElement.regY = $($end_screen).height() / 2;
+	// endscreenElement.x = $($end_screen.parentElement).width() / 2;
+	// endscreenElement.y = canvas.height / 2;
+	// stage.addChild(endscreenElement);
 	
 	//animate the setup
 	createjs.Tween.get(consoleElement).to({ alpha: 1, x: $($console.parentElement).width() / 2 - canvas.width / 2, y: 0, rotation: 0 }, 1500, createjs.Ease.quadIn);
@@ -588,7 +615,7 @@ function update() {
 				displayMove(currentMove);
 				if(!TWO_PLAYER && currentMove.playerNumber === 1) {
 					currentMove.blockPercentage = blockPercentageAI(currentMove);
-					previousMoves.push(currentMove.id);
+					previousMoves.push(currentMove.moveId);
 					if(previousMoves.length > maxNGrams)
 						previousMoves.shift();
 				}
@@ -597,7 +624,7 @@ function update() {
 		}
 		
 		if(!playerAttributes.active || !enemyAttributes.active) {
-			gameState = GS.End;
+			gameState = GS.GameOver;
 			if(!TWO_PLAYER)
 				clearInterval(aiInterval);
 			if(!playerAttributes.active)
@@ -606,20 +633,24 @@ function update() {
 				player2.gotoAndPlay("falldown");
 		}
 		
-	} else if(gameState === GS.End) {
+	} else if(gameState === GS.GameOver) {
 		enableControls = false;
-		ctx.font = "30px Arial";
+		ctx.font = "50px Impact";
+		ctx.fillStyle = "red";
+		ctx.textAlign = "center";
 		if(!TWO_PLAYER) {
 			if(!enemyAttributes.active)
-				ctx.fillText("YOU WIN", canvas.width / 2 - 70, canvas.height / 2);
+				ctx.fillText("YOU WIN", canvas.width / 2, canvas.height / 2);
 			else
-				ctx.fillText("YOU LOSE", canvas.width / 2 - 80, canvas.height / 2);
+				ctx.fillText("YOU LOSE", canvas.width / 2, canvas.height / 2);
 		} else {
 			if(!enemyAttributes.active)
-				ctx.fillText("PLAYER 1 WINS", canvas.width / 2 - 150, canvas.height / 2);
+				ctx.fillText("PLAYER 1 WINS", canvas.width / 2, canvas.height / 2);
 			else
-				ctx.fillText("PLAYER 2 WINS", canvas.width / 2 - 150, canvas.height / 2);
+				ctx.fillText("PLAYER 2 WINS", canvas.width / 2, canvas.height / 2);
 		}
+	} else if(gameState === GS.End) {
+		
 	}
 	
 	draw();
@@ -759,7 +790,8 @@ function pickMoveAI() {
 function blockPercentageAI(move) {
 	var previousTimes = 0;
 	for(var i = 0; i < previousMoves.length; i++) {
-		if(previousMoves[i] == move.id)
+		console.log(previousMoves[i])
+		if(previousMoves[i] == move.moveId)
 			previousTimes++;
 	}
 	return (20 + previousTimes * 10);
