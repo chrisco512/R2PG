@@ -18,7 +18,8 @@ var previousMoves = [];
 // var opponentX = canvas.width / 2 + 65;
 var fallBackCounter;
 var maxNGrams = 8;
-
+var icon_width = 50;
+var TWO_PLAYER = false;
 
 
 var GS = {
@@ -34,6 +35,7 @@ var Keys = {
 	DOWN: 40,
 	A: 65,
 	D: 68,
+	I: 73,
 	Q: 81,
 	W: 87,
 	ZERO: 48,
@@ -167,6 +169,7 @@ var enemyAttributes = {
 };
 
 function executeMove(move) {
+	console.log(move.blockPercentage);
 	if(move.index > move.moveId.length || gameState === GS.End) {
 		// if(move.moveNumber === 4) {
 			// //big move, have character fall back
@@ -193,8 +196,6 @@ function executeMove(move) {
 		removeMoveDisplay();
 		return;
 	}
-	
-	updateIcons(move.index + 1);
 	
 	var time = 0;
 	switch(move.moveId[move.index]) {
@@ -291,10 +292,12 @@ function executeMove(move) {
 				
 				blockPenalty = false;
 				
+				updateIcons(move.index);
+				
 			}
 			
-		}, time / 3);
-	}, time / 3);
+		}, time * 3 / 5);
+	}, time / 5);
 }
 
 function fallBackPlayer() {
@@ -433,61 +436,59 @@ function handleComplete() {
 
 	$("body").keydown(function(e) {
 		if(enableControls) {
-			console.log(e.which);
 			if(e.which == Keys.ONE) {
-				console.log(playerAttributes.cost(0));
 				if(playerAttributes.stamina >= playerAttributes.cost(0)) {
 					playerAttributes.takeStamina(playerAttributes.cost(0));
-					moveQueue.push(new move(1, 1, player1, playerAttributes.moves[0], 0, 0, false));
+					moveQueue.push(new move(1, 1, player1, playerAttributes.moves[0], 0, 0, 0));
 					addMoveToConsole(1);
 				}
 			}
 			else if(e.which == Keys.TWO) {
 				if(playerAttributes.stamina >= playerAttributes.cost(1)) {
 					playerAttributes.takeStamina(playerAttributes.cost(1));
-					moveQueue.push(new move(2, 1, player1, playerAttributes.moves[1], 0, 0, false));
+					moveQueue.push(new move(2, 1, player1, playerAttributes.moves[1], 0, 0, 0));
 					addMoveToConsole(2);
 				}
 			}
 			else if(e.which == Keys.THREE) {
 				if(playerAttributes.stamina >= playerAttributes.cost(2)) {
 					playerAttributes.takeStamina(playerAttributes.cost(2));
-					moveQueue.push(new move(3, 1, player1, playerAttributes.moves[2], 0, 0, false));
+					moveQueue.push(new move(3, 1, player1, playerAttributes.moves[2], 0, 0, 0));
 					addMoveToConsole(3);
 				}
 			}
 			else if(e.which == Keys.FOUR) {
 				if(playerAttributes.stamina >= playerAttributes.cost(3)) {
 					playerAttributes.takeStamina(playerAttributes.cost(3));
-					moveQueue.push(new move(4, 1, player1, playerAttributes.moves[3], 0, 0, false));
+					moveQueue.push(new move(4, 1, player1, playerAttributes.moves[3], 0, 0, 0));
 					addMoveToConsole(4);
 				}
 			}
 			if(e.which == Keys.SEVEN) {
-				if(enemyAttributes.stamina >= enemyAttributes.cost(0)) {
+				if(TWO_PLAYER && enemyAttributes.stamina >= enemyAttributes.cost(0)) {
 					enemyAttributes.takeStamina(enemyAttributes.cost(0));
-					moveQueue.push(new move(1, 2, player2, enemyAttributes.moves[0], 0, 0, false));
+					moveQueue.push(new move(1, 2, player2, enemyAttributes.moves[0], 0, 0, 0));
 					addMoveToConsole(5);
 				}
 			}
 			else if(e.which == Keys.EIGHT) {
-				if(enemyAttributes.stamina >= enemyAttributes.cost(1)) {
+				if(TWO_PLAYER && enemyAttributes.stamina >= enemyAttributes.cost(1)) {
 					enemyAttributes.takeStamina(enemyAttributes.cost(1));
-					moveQueue.push(new move(2, 2, player2, enemyAttributes.moves[1], 0, 0, false));
+					moveQueue.push(new move(2, 2, player2, enemyAttributes.moves[1], 0, 0, 0));
 					addMoveToConsole(6);
 				}
 			}
 			else if(e.which == Keys.NINE) {
-				if(enemyAttributes.stamina >= enemyAttributes.cost(2)) {
+				if(TWO_PLAYER && enemyAttributes.stamina >= enemyAttributes.cost(2)) {
 					enemyAttributes.takeStamina(enemyAttributes.cost(2));
-					moveQueue.push(new move(3, 2, player2, enemyAttributes.moves[2], 0, 0, false));
+					moveQueue.push(new move(3, 2, player2, enemyAttributes.moves[2], 0, 0, 0));
 					addMoveToConsole(7);
 				}
 			}
 			else if(e.which == Keys.ZERO) {
-				if(enemyAttributes.stamina >= enemyAttributes.cost(3)) {
+				if(TWO_PLAYER && enemyAttributes.stamina >= enemyAttributes.cost(3)) {
 					enemyAttributes.takeStamina(enemyAttributes.cost(3));
-					moveQueue.push(new move(4, 2, player2, enemyAttributes.moves[3], 0, 0, false));
+					moveQueue.push(new move(4, 2, player2, enemyAttributes.moves[3], 0, 0, 0));
 					addMoveToConsole(8);
 				}
 			}
@@ -495,15 +496,24 @@ function handleComplete() {
 				playerAttributes.stamina = playerAttributes.maxStamina;
 			}
 			if(e.which == Keys.W) {
-				if(moveExecuting && !blockPenalty) {
+				if(moveExecuting && !blockPenalty && currentMove.playerNumber === 2) {
 					if(enableBlock) {
 						currentMove.blockPercentage = 100; //player blocked the attack
 					} else {
 						blockPenalty = true;
 					}
 				}
-				
 			}
+			if(e.which == Keys.I) {
+				if(moveExecuting && !blockPenalty && TWO_PLAYER && currentMove.playerNumber === 1) {
+					if(enableBlock) {
+						currentMove.blockPercentage = 100; //player 2 blocked the attack
+					} else {
+						blockPenalty = true;
+					}
+				}
+			}
+			
 		}
 	});
 	
@@ -576,9 +586,9 @@ function update() {
 				currentMove = moveQueue.shift();
 				removeMoveFromConsole();
 				displayMove(currentMove);
-				if(currentMove.playerNumber === 1) {
+				if(!TWO_PLAYER && currentMove.playerNumber === 1) {
 					currentMove.blockPercentage = blockPercentageAI(currentMove);
-					previousMoves.push(currentMove);
+					previousMoves.push(currentMove.id);
 					if(previousMoves.length > maxNGrams)
 						previousMoves.shift();
 				}
@@ -588,7 +598,8 @@ function update() {
 		
 		if(!playerAttributes.active || !enemyAttributes.active) {
 			gameState = GS.End;
-			clearInterval(aiInterval);
+			if(!TWO_PLAYER)
+				clearInterval(aiInterval);
 			if(!playerAttributes.active)
 				player1.gotoAndPlay("falldown");
 			else
@@ -598,10 +609,17 @@ function update() {
 	} else if(gameState === GS.End) {
 		enableControls = false;
 		ctx.font = "30px Arial";
-		if(!enemyAttributes.active)
-			ctx.fillText("YOU WIN", canvas.width / 2 - 70, canvas.height / 2);
-		else
-			ctx.fillText("YOU LOSE", canvas.width / 2 - 80, canvas.height / 2);
+		if(!TWO_PLAYER) {
+			if(!enemyAttributes.active)
+				ctx.fillText("YOU WIN", canvas.width / 2 - 70, canvas.height / 2);
+			else
+				ctx.fillText("YOU LOSE", canvas.width / 2 - 80, canvas.height / 2);
+		} else {
+			if(!enemyAttributes.active)
+				ctx.fillText("PLAYER 1 WINS", canvas.width / 2 - 150, canvas.height / 2);
+			else
+				ctx.fillText("PLAYER 2 WINS", canvas.width / 2 - 150, canvas.height / 2);
+		}
 	}
 	
 	draw();
@@ -627,7 +645,8 @@ function decCount() {
 		countDown = "FIGHT!";
 		$("#countdown").fadeOut();
 		clearInterval(countDownInterval);
-		aiInterval = setInterval(pickMoveAI, 1000);
+		if(!TWO_PLAYER)
+			aiInterval = setInterval(pickMoveAI, 1000);
 		gameState = GS.Fight;
 	}
 }
@@ -641,9 +660,9 @@ function displayMove(move) {
 	var x, y;
 	y = 510;
 	if((move.moveId.length + 1) % 2 === 0)
-		x = canvas.width / 2 - (43 + 20) * (move.moveId.length + 1) / 2 + 20 - 20 / 2;
+		x = canvas.width / 2 - (icon_width + 20) * (move.moveId.length + 1) / 2 + 20 - 20 / 2;
 	else
-		x = canvas.width / 2 - (43 + 20) * move.moveId.length / 2 - 43 / 2;
+		x = canvas.width / 2 - (icon_width + 20) * move.moveId.length / 2 - icon_width / 2;
 	switch(move.moveNumber) {
 		case 1:
 			icons[0] = new createjs.Bitmap("images/button_1.png");
@@ -661,7 +680,7 @@ function displayMove(move) {
 	icons[0].x = x;
 	icons[0].y = y;
 	stage.addChild(icons[0]);
-	x += 43 + 20;
+	x += icon_width + 20;
 	for(var i = 0; i < move.moveId.length; i++) {
 		switch(move.moveId[i]) {
 			case MoveList.PUNCH_L.id:
@@ -686,7 +705,7 @@ function displayMove(move) {
 		icons[i+1].x = x;
 		icons[i+1].y = y;
 		stage.addChild(icons[i+1]);
-		x += 43 + 20;
+		x += icon_width + 20;
 	}
 }
 
@@ -696,7 +715,7 @@ function updateIcons(index) {
 	
 	//move the rest of the icons left
 	for(var i = index + 1; i < icons.length; i++)
-		createjs.Tween.get(icons[i]).to({x:(icons[i].x - 43 - 20)}, 100, createjs.Ease.linear);
+		createjs.Tween.get(icons[i]).to({x:(icons[i].x - icon_width - 20)}, 100, createjs.Ease.linear);
 }
 
 function removeMoveDisplay() {
@@ -740,7 +759,7 @@ function pickMoveAI() {
 function blockPercentageAI(move) {
 	var previousTimes = 0;
 	for(var i = 0; i < previousMoves.length; i++) {
-		if(previousMoves[i] == move)
+		if(previousMoves[i] == move.id)
 			previousTimes++;
 	}
 	return (20 + previousTimes * 10);
