@@ -49,7 +49,7 @@
 	width: 100px;
 	background-image: url("../images/console.png");
 	background-size: 100% 100%;
-	z-index: -21;
+	z-index: 0;
 }
 
 #console_r {
@@ -57,7 +57,7 @@
 	width: 100px;
 	background-image: url("../images/console_r.png");
 	background-size: 100% 100%;
-	z-index: -22;
+	z-index: 0;
 	overflow: hidden;
 }
 
@@ -148,9 +148,9 @@
 }
 
 .setupmoves {
-	background-color: orange;
+	background-color: rgba(88,88,88,0.5);
 	text-align: left;
-	height: 30px;
+	height: 50px;
 	width: 38%;
 	position: relative;
 	left: 12%;

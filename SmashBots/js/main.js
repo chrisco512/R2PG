@@ -19,8 +19,6 @@ var previousMoves = [];
 var fallBackCounter;
 var maxNGrams = 8;
 
-
-
 var GS = {
 	CountDown: 0,
 	Fight: 1,
@@ -512,6 +510,9 @@ function handleComplete() {
 	createjs.Ticker.setFPS(FPS);
 	createjs.Ticker.addListener(stage);
 	createjs.Ticker.addListener(update);
+	
+	window.vm = new vm();
+	ko.applyBindings(window.vm);
 }
 
 var moveImgHtml = "<div class='moveQImg'></div>";
@@ -735,6 +736,10 @@ function pickMoveAI() {
 		addMoveToConsole(moveNumber + 4);
 	}
 	
+}
+
+function runThis() {
+	console.log("ran taht");
 }
 
 function blockPercentageAI(move) {
