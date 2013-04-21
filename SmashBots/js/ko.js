@@ -59,12 +59,12 @@ Move.prototype.clone = function () {
 
 var vm = function() {
 	var self = this;
-	self.moveOne = new ko.observableArray([new Move("a"),new Move("a"),new Move("a"),new Move("a")]);
+	self.moveOne = new ko.observableArray([new Move("p"),new Move("P"),new Move("k"),new Move("K")]);
 	self.moveTwo = new ko.observableArray([]);
 	self.moveThree = new ko.observableArray([]);
 	self.moveFour = new ko.observableArray([]);
 	
-	self.options = [new Move("a"),new Move("b"),new Move("c"),new Move("d"),new Move("e")];
+	self.options = [new Move("p"),new Move("P"),new Move("k"),new Move("K"),new Move("h"),new Move("f")];
 	self.addMoveToOne = function(obj,e,ui) {
 		if(ui.item.hasClass("ui-draggable")) {
 			obj.cancelDrop = true;
