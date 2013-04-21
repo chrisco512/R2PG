@@ -69,6 +69,28 @@ function move(moveNumber, playerNumber, player, moveId, damage, index, blockPerc
 	};
 }
 
+function startFight() {
+	var move1 = $("#move1").val();
+	var move2 = $("#move1").val();
+	var move3 = $("#move1").val();
+	var move4 = $("#move1").val();
+	var head = $("#head").val();
+	var chest = $("#Chest").val();
+	var legs = $("#Legs").val();
+	var arm = $("#Arm").val();
+	
+	if(move1 !== "")
+		playerAttributes.moves[0] = move1;
+	if(move2 !== "")
+		playerAttributes.moves[1] = move2;
+	if(move3 !== "")
+		playerAttributes.moves[2] = move3;
+	if(move4 !== "")
+		playerAttributes.moves[3] = move4;
+		
+	$("#setup").hide();
+};
+
 var playerAttributes = {
 	maxHp: 100,
 	hp: 100,
@@ -345,6 +367,33 @@ function init() {
 	
 	currentMove = move(1, 1, player1, "a", 0, 0, 0);
 }
+
+var playerImages = {
+		arm: "arm",
+		fist_l: "fist_l",
+		fist_r: "fist_r",
+		foot: "foot",
+		forearm: "forearm",
+		head: "head",
+		leg: "leg",
+		pelvis: "pelvis",
+		shin: "shin",
+		torso: "torso"
+	};
+	
+	
+var enemyImages = {
+		arm: "arm",
+		fist_l: "fist_l",
+		fist_r: "fist_r",
+		foot: "foot",
+		forearm: "forearm",
+		head: "head",
+		leg: "leg",
+		pelvis: "pelvis",
+		shin: "shin",
+		torso: "torso"
+	};
 
 function handleFileLoad(o) {
 	if (o.type == "image") { images[o.id] = o.result; }

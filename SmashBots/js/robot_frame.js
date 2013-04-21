@@ -9,17 +9,18 @@ var cstImg;
 (lib.robot_frame = function(mode,startPosition,loop, cstImages) {
 	this.initialize(mode,startPosition,loop,{idle:0,punch_r:15,punch_l:22,kick_r:29,kick_l:40,block_upper:51,block_lower:55,kick_flip:62,takehit_upper:72,takehit_lower:75,headbutt:82,falldown:89},true);
 	
+
 	cstImg = cstImages || {
 		arm: img["arm"],
-		fist_l: img.fist_l,
-		fist_r: img.fist_r,
-		foot: img.foot,
-		forearm: img.forearm,
-		head: img.head,
-		leg: img.leg,
-		pelvis: img.pelvis,
-		shin: img.shin,
-		torso: img.torso
+		fist_l: img["fist_l"],
+		fist_r: img["fist_r"],
+		foot: img["foot"],
+		forearm: img["forearm"],
+		head: img["head"],
+		leg: img["leg"],
+		pelvis: img["pelvis"],
+		shin: img["shin"],
+		torso: img["torso"]
 	};
 
 	// timeline functions:
