@@ -58,11 +58,43 @@
 		<div id="setup">
 			<div id="innerbar">
 				<h1>Setup Menu</h1>
-				<div class="setupmoves" data-bind="foreach: options">
-					<img data-bind="draggable: { data: $data }, attr: { src: $data.source }" />
+				<div class="setupmoves movesTitle">
+					Moves
 				</div>
-				<div class="setupmoves" data-bind="sortable: { data: moveOne, beforeMove: addMoveToOne }">
-					<img data-bind="attr: { src: $data.source }" />
+				<div class="setupmoves">
+					<div class="moves" data-bind="sortable: { data: moveOne, beforeMove: addMoveToOne }">
+						<img data-bind="attr: { src: $data.source }" />
+					</div>
+					<div class="optionButtons" data-bind="foreach: options">
+						<img data-bind="attr: { src: $data.source }, click: $root.addMoveToOne" />
+					</div>
+				</div>
+				
+				<div class="setupmoves">
+					<div class="moves" data-bind="sortable: { data: moveTwo, beforeMove: addMoveToTwo }">
+						<img data-bind="attr: { src: $data.source }" />
+					</div>
+					<div class="optionButtons" data-bind="foreach: options">
+						<img data-bind="attr: { src: $data.source }, click: $root.addMoveToTwo" />
+					</div>
+				</div>
+				
+				<div class="setupmoves">
+					<div class="moves" data-bind="sortable: { data: moveThree, beforeMove: addMoveToThree }">
+						<img data-bind="attr: { src: $data.source }" />
+					</div>
+					<div class="optionButtons" data-bind="foreach: options">
+						<img data-bind="attr: { src: $data.source }, click: $root.addMoveToThree" />
+					</div>
+				</div>
+				
+				<div class="setupmoves">
+					<div class="moves" data-bind="sortable: { data: moveFour, beforeMove: addMoveToFour}">
+						<img data-bind="attr: { src: $data.source }" />
+					</div>
+					<div class="optionButtons" data-bind="foreach: options">
+						<img data-bind="attr: { src: $data.source }, click: $root.addMoveToFour" />
+					</div>
 				</div>
 			</div>
 		</div>

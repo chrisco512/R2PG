@@ -43,10 +43,10 @@ var Move = function(name) {
 			src = "images/kick_right.png";
 			break;
 		case MoveList.KICK_FLIP.id:
-			src = "images/kick_left.png";
+			src = "images/kick_flip.png";
 			break;
 		case MoveList.HEADBUTT.id:
-			src = "images/head.png";
+			src = "images/head_butt.png";
 			break;
 	}
 
@@ -65,10 +65,17 @@ var vm = function() {
 	self.moveFour = new ko.observableArray([]);
 	
 	self.options = [new Move("p"),new Move("P"),new Move("k"),new Move("K"),new Move("h"),new Move("f")];
-	self.addMoveToOne = function(obj,e,ui) {
-		if(ui.item.hasClass("ui-draggable")) {
-			obj.cancelDrop = true;
-			self.moveOne.push(new Move(obj.item.move));
-		}
+
+	self.addMoveToOne = function($data) {
+		self.moveOne.push(new Move($data.move));
+	};
+	self.addMoveToTwo = function($data) {
+		self.moveTwo.push(new Move($data.move));
+	};
+	self.addMoveToThree = function($data) {
+		self.moveThree.push(new Move($data.move));
+	};
+	self.addMoveToFour = function($data) {
+		self.moveFour.push(new Move($data.move));
 	};
 };

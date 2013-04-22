@@ -778,10 +778,10 @@ function displayMove(move) {
 				icons[i+1] = new createjs.Bitmap("images/kick_right.png");
 				break;
 			case MoveList.KICK_FLIP.id:
-				icons[i+1] = new createjs.Bitmap("images/kick_left.png");
+				icons[i+1] = new createjs.Bitmap("images/kick_flip.png");
 				break;
 			case MoveList.HEADBUTT.id:
-				icons[i+1] = new createjs.Bitmap("images/head.png");
+				icons[i+1] = new createjs.Bitmap("images/head_butt.png");
 				break;
 		}
 		icons[i+1].x = x;
