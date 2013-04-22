@@ -357,7 +357,20 @@ function init() {
 		{src:"images/pelvis.png", id:"pelvis"},
 		{src:"images/shin.png", id:"shin"},
 		{src:"images/torso.png", id:"torso"},
-		{src:"images/head2.png", id:"head2"}
+		{src:"images/Head1.png", id:"head1"},
+		{src:"images/Head1a.png", id:"head1a"},
+		{src:"images/forearm1.png", id:"forearm1"},
+		{src:"images/forearm2.png", id:"forearm2"},
+		{src:"images/arm1.png", id:"arm1"},
+		{src:"images/arm1a.png", id:"arm1a"},
+		{src:"images/claw.png", id:"claw"},
+		{src:"images/claw1a.png", id:"claw1a"},
+		{src:"images/leg1a.png", id:"leg1a"},
+		{src:"images/leg2a.png", id:"leg2a"},
+		{src:"images/shin1.png", id:"shin1"},
+		{src:"images/shin1a.png", id:"shin1a"},
+		{src:"images/torso1.png", id:"torso1"},
+		{src:"images/torso1a.png", id:"torso1a"}
 	];
 
 	var loader = new createjs.PreloadJS(false);
@@ -367,7 +380,7 @@ function init() {
 	
 	gameState = GS.CountDown;
 	
-	countDownInterval = setInterval(decCount, 1000);
+	//countDownInterval = setInterval(decCount, 1000);
 	
 	enableControls = false;
 	moveExecuting = false;
@@ -380,6 +393,83 @@ function init() {
 	
 	currentMove = move(1, 1, player1, "a", 0, 0, 0);
 }
+
+function addSecondPlayer() {
+	$("#twoP").hide();
+	$(".right").show();
+	TWO_PLAYER = true;
+}
+
+function setupDone() {
+	var player1Move = window.vm.moveOne();
+	var idx;
+	var player1MovesStr = "";
+	for(idx = 0; idx < player1Move.length; idx++) {
+		player1MovesStr += player1Move[idx].move;
+	}
+	playerAttributes.moves[0] = player1MovesStr;
+	
+	player1Move = window.vm.moveTwo();
+	player1MovesStr = "";
+	for(idx = 0; idx < player1Move.length; idx++) {
+		player1MovesStr += player1Move[idx].move;
+	}
+	playerAttributes.moves[1] = player1MovesStr;
+	
+	player1Move = window.vm.moveThree();
+	player1MovesStr = "";
+	for(idx = 0; idx < player1Move.length; idx++) {
+		player1MovesStr += player1Move[idx].move;
+	}
+	playerAttributes.moves[2] = player1MovesStr;
+	
+	player1Move = window.vm.moveFour();
+	player1MovesStr = "";
+	for(idx = 0; idx < player1Move.length; idx++) {
+		player1MovesStr += player1Move[idx].move;
+	}
+	playerAttributes.moves[3] = player1MovesStr;
+	
+	if(TWO_PLAYER) {
+		var player2Move = window.vm.moveOne2();
+		var idx;
+		var player2MovesStr = "";
+		for(idx = 0; idx < player2Move.length; idx++) {
+			player2MovesStr += player2Move[idx].move;
+		}
+		enemyAttributes.moves[0] = player2MovesStr;
+		
+		player2Move = window.vm.moveTwo2();
+		player2MovesStr = "";
+		for(idx = 0; idx < player2Move.length; idx++) {
+			player2MovesStr += player2Move[idx].move;
+		}
+		enemyAttributes.moves[1] = player2MovesStr;
+		
+		player2Move = window.vm.moveThree2();
+		player2MovesStr = "";
+		for(idx = 0; idx < player2Move.length; idx++) {
+			player2MovesStr += player2Move[idx].move;
+		}
+		enemyAttributes.moves[2] = player2MovesStr;
+		
+		player2Move = window.vm.moveFour2();
+		player2MovesStr = "";
+		for(idx = 0; idx < player2Move.length; idx++) {
+			player2MovesStr += player2Move[idx].move;
+		}
+		enemyAttributes.moves[3] = player2MovesStr;
+	}
+	
+	
+	
+	$("#setup").hide();
+	
+	createjs.Ticker.setPaused(false);
+	countDownInterval = setInterval(decCount, 1000);
+}
+
+var which = 0;
 
 var playerImages = {
 		arm: "arm",
@@ -401,7 +491,7 @@ var enemyImages = {
 		fist_r: "fist_r",
 		foot: "foot",
 		forearm: "forearm",
-		head: "head",
+		head: "head2",
 		leg: "leg",
 		pelvis: "pelvis",
 		shin: "shin",
@@ -597,6 +687,8 @@ function handleComplete() {
 	createjs.Ticker.setFPS(FPS);
 	createjs.Ticker.addListener(stage);
 	createjs.Ticker.addListener(update);
+	
+	createjs.Ticker.setPaused(true);
 	
 	window.vm = new vm();
 	ko.applyBindings(window.vm);

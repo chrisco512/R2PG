@@ -39,16 +39,16 @@
 		
 		<div id="console">
 			<div id="button_1" class="button-1" onclick="buttonPressed(1)">
-				<div class="button-txt">2</div>
+				<div class="button-txt">1</div>
 			</div>
 			<div id="button_2" class="button-2" onclick="buttonPressed(2)">
-				<div class="button-txt">7</div>
+				<div class="button-txt">2</div>
 			</div>
 			<div id="button_3" class="button-3" onclick="buttonPressed(3)">
-				<div class="button-txt">12</div>
+				<div class="button-txt">3</div>
 			</div>
 			<div id="button_4" class="button-4" onclick="buttonPressed(4)">
-				<div class="button-txt">20</div>
+				<div class="button-txt">4</div>
 			</div>
 			<div class="button-5"></div>
 		</div>
@@ -58,10 +58,58 @@
 		<div id="setup">
 			<div id="innerbar">
 				<h1>Setup Menu</h1>
+				<button id="twoP" onclick="addSecondPlayer()">Add 2nd Player</button>
+				<div class="right">
+					<div class="setupmoves_r movesTitle movesTitle_r">
+						Player 2 Moves
+					</div>
+					<div class="setupmoves_r">
+						<div class="trash" onclick="window.vm.clearMove(5)">
+						</div>
+						<div class="moves" data-bind="sortable: { data: moveOne2, beforeMove: addMoveToOne2 }">
+							<img data-bind="attr: { src: $data.source }" />
+						</div>
+						<div class="optionButtons" data-bind="foreach: options">
+							<img data-bind="attr: { src: $data.source }, click: $root.addMoveToOne2" />
+						</div>
+					</div>
+					<div class="setupmoves_r">
+						<div class="trash" onclick="window.vm.clearMove(6)">
+						</div>
+						<div class="moves" data-bind="sortable: { data: moveTwo2, beforeMove: addMoveToTwo2 }">
+							<img data-bind="attr: { src: $data.source }" />
+						</div>
+						<div class="optionButtons" data-bind="foreach: options">
+							<img data-bind="attr: { src: $data.source }, click: $root.addMoveToTwo2" />
+						</div>
+					</div>
+					<div class="setupmoves_r">
+						<div class="trash" onclick="window.vm.clearMove(7)">
+						</div>
+						<div class="moves" data-bind="sortable: { data: moveThree2, beforeMove: addMoveToThree2 }">
+							<img data-bind="attr: { src: $data.source }" />
+						</div>
+						<div class="optionButtons" data-bind="foreach: options">
+							<img data-bind="attr: { src: $data.source }, click: $root.addMoveToThree2" />
+						</div>
+					</div>
+					<div class="setupmoves_r">
+						<div class="trash" onclick="window.vm.clearMove(8)">
+						</div>
+						<div class="moves" data-bind="sortable: { data: moveFour2, beforeMove: addMoveToFour2 }">
+							<img data-bind="attr: { src: $data.source }" />
+						</div>
+						<div class="optionButtons" data-bind="foreach: options">
+							<img data-bind="attr: { src: $data.source }, click: $root.addMoveToFour2" />
+						</div>
+					</div>
+				</div>
 				<div class="setupmoves movesTitle">
-					Moves
+					Player 1 Moves
 				</div>
 				<div class="setupmoves">
+					<div class="trash" onclick="window.vm.clearMove(1)">
+					</div>
 					<div class="moves" data-bind="sortable: { data: moveOne, beforeMove: addMoveToOne }">
 						<img data-bind="attr: { src: $data.source }" />
 					</div>
@@ -71,6 +119,8 @@
 				</div>
 				
 				<div class="setupmoves">
+					<div class="trash" onclick="window.vm.clearMove(2)">
+					</div>
 					<div class="moves" data-bind="sortable: { data: moveTwo, beforeMove: addMoveToTwo }">
 						<img data-bind="attr: { src: $data.source }" />
 					</div>
@@ -80,6 +130,8 @@
 				</div>
 				
 				<div class="setupmoves">
+					<div class="trash" onclick="window.vm.clearMove(3)">
+					</div>
 					<div class="moves" data-bind="sortable: { data: moveThree, beforeMove: addMoveToThree }">
 						<img data-bind="attr: { src: $data.source }" />
 					</div>
@@ -89,12 +141,17 @@
 				</div>
 				
 				<div class="setupmoves">
+					<div class="trash" onclick="window.vm.clearMove(4)">
+					</div>
 					<div class="moves" data-bind="sortable: { data: moveFour, beforeMove: addMoveToFour}">
 						<img data-bind="attr: { src: $data.source }" />
 					</div>
 					<div class="optionButtons" data-bind="foreach: options">
 						<img data-bind="attr: { src: $data.source }, click: $root.addMoveToFour" />
 					</div>
+				</div>
+				<div class="startFight">
+					<button onclick="setupDone()">Start Fight!</button>
 				</div>
 			</div>
 		</div>

@@ -9,19 +9,34 @@ var cstImg;
 (lib.robot_frame = function(mode,startPosition,loop, cstImages) {
 	this.initialize(mode,startPosition,loop,{idle:0,punch_r:15,punch_l:22,kick_r:29,kick_l:40,block_upper:51,block_lower:55,kick_flip:62,takehit_upper:72,takehit_lower:75,headbutt:82,falldown:89},true);
 	
-
-	cstImg = cstImages || {
-		arm: img["arm"],
-		fist_l: img["fist_l"],
-		fist_r: img["fist_r"],
-		foot: img["foot"],
-		forearm: img["forearm"],
-		head: img["head"],
-		leg: img["leg"],
-		pelvis: img["pelvis"],
-		shin: img["shin"],
-		torso: img["torso"]
-	};
+	if(which === 0) {
+		cstImg = cstImages || {
+			arm: img["arm1"],
+			fist_l: img["claw"],
+			fist_r: img["claw"],
+			foot: img["foot"],
+			forearm: img["forearm1"],
+			head: img["head1"],
+			leg: img["leg1a"],
+			pelvis: img["pelvis"],
+			shin: img["shin1"],
+			torso: img["torso1"]
+		};
+		which++;
+	} else {
+		cstImg = cstImages || {
+			arm: img["arm1a"],
+			fist_l: img["claw1a"],
+			fist_r: img["claw1a"],
+			foot: img["foot"],
+			forearm: img["forearm2"],
+			head: img["head1a"],
+			leg: img["leg2a"],
+			pelvis: img["pelvis"],
+			shin: img["shin1a"],
+			torso: img["torso1a"]
+		};
+	}
 
 	// timeline functions:
 	this.frame_14 = function() {
